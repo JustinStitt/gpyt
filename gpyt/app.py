@@ -1,20 +1,6 @@
-from gpyt import API_KEY, MODEL, PROMPT
-import argparse
+from gpyt import API_KEY, MODEL, PROMPT, DEBUG, ARGS, INTRO
 
 from .assistant import Assistant
-
-arg_parser = argparse.ArgumentParser(
-    prog="gpyt", description="Infer with GPT on the command line!"
-)
-arg_parser.add_argument(
-    "--no-memory",
-    action="store_true",
-    required=False,
-    default=False,
-    help="Disable assistant memory during conversation. (saves tokens, $$$)",
-)
-
-args = arg_parser.parse_args()
 
 
 def handle_exit():
@@ -24,8 +10,10 @@ def handle_exit():
 
 def main():
     gpt = Assistant(
-        api_key=API_KEY or "", model=MODEL, prompt=PROMPT, memory=not args.no_memory
+        api_key=API_KEY or "", model=MODEL, prompt=PROMPT, memory=not ARGS.no_memory
     )
+
+    print(f"\n🤖: {INTRO}", flush=True, end="\n\n")
 
     while 1:
         user_input = input("🙂> ")
