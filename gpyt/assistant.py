@@ -15,8 +15,9 @@ class Assistant:
         self.messages = [self.messages[0]]
 
     def get_response(self, user_input: str) -> str:
-        if self.memory:
-            self.messages.append({"role": "user", "content": user_input})
+        if not self.memory:
+            self.clear_history()
+        self.messages.append({"role": "user", "content": user_input})
 
         response = openai.ChatCompletion.create(  # type: ignore
             model=self.model, messages=self.messages
