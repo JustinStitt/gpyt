@@ -7,7 +7,6 @@ class Assistant:
         self.model = model
         self.prompt = prompt
         self.memory = memory
-        print(f"{self.memory=}")
         self.messages = [
             {"role": "system", "content": self.prompt},
         ]

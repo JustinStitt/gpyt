@@ -15,7 +15,6 @@ arg_parser.add_argument(
 )
 
 args = arg_parser.parse_args()
-print(args)
 
 
 def handle_exit():
