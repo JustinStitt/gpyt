@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gptcli"
+name = "gpyt"
 version = "0.1.0"
 description = "GPT on the command line."
 authors = ["Justin Stitt <jstitt007@gmail.com>"]

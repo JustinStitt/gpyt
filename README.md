@@ -1,4 +1,4 @@
-# GPTCLI
+# gpyt
 
 Interact with GPT on the command line.
 

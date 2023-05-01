@@ -1,10 +1,10 @@
-from gptcli import API_KEY, MODEL, PROMPT
+from gpyt import API_KEY, MODEL, PROMPT
 import argparse
 
 from .assistant import Assistant
 
 arg_parser = argparse.ArgumentParser(
-    prog="GPT-CLI", description="Infer with GPT on the command line!"
+    prog="gpyt", description="Infer with GPT on the command line!"
 )
 arg_parser.add_argument(
     "--no-memory",
