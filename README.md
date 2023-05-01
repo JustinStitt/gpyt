@@ -3,6 +3,16 @@
 Interact with GPT on the command line.
 
 
+>WIP<
+
+### How to run:
+```sh
+$ pip install gpyt
+
+add `OPENAI_API_KEY="<your_openai_api_key>"` in an .env at $HOME
+
+$ python -m gpyt
+```
 
 ### Desired Features
 * `copy` to copy GPT's response to clipboard
@@ -10,6 +20,7 @@ Interact with GPT on the command line.
 * add gpt jailbreaks (DAN-esque)
 * `new` to start a new chat (clear all history and console window)
 * store chat logs somewhere.
-* add special flags like -t (terse) or -v (verbose) or -d (detailed) or -i (informal) or -f (for file input)
+* add special flags like -t (terse) or -v (verbose) or -d (detailed) or -i
+  (informal) or -f (for file input) or --dan (for jailbreak)
 * scrolling text (adjustable speed, or disable all together)
 * use streams api?
