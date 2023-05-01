@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "gptcli"
 version = "0.1.0"
-description = ""
+description = "GPT on the command line."
 authors = ["Justin Stitt <jstitt007@gmail.com>"]
 readme = "README.md"
 
