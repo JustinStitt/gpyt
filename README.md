@@ -24,3 +24,5 @@ $ python -m gpyt
   (informal) or -f (for file input) or --dan (for jailbreak)
 * scrolling text (adjustable speed, or disable all together)
 * use streams api?
+* model select CLI
+* loading wheel

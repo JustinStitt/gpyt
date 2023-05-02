@@ -1,13 +1,20 @@
 import argparse
 import os
 
-from dotenv import load_dotenv
+from dotenv import find_dotenv, get_key
 
-load_dotenv()
+ENV_PATH = find_dotenv()
 
-API_KEY = os.getenv("OPENAI_API_KEY") or None
+API_KEY = get_key(dotenv_path=ENV_PATH, key_to_get="OPENAI_API_KEY")
 
-assert API_KEY is not None, "⚠ Missing API KEY: Please set one. ⚠"
+# try to get from os envrionment variables
+
+if API_KEY is None:
+    API_KEY = os.getenv("OPENAI_API_KEY") or None
+
+assert (
+    API_KEY is not None
+), "⚠ Missing API KEY: Please set one in your `.env` via `OPENAI_API_KEY=<your_key>` or using your OS's enviroment variables like `export OPENAI_API_KEY=<my_key>`⚠"
 
 PROMPT = """
 You are a helpful assistant. Be accurate and concise with your responses.
@@ -17,6 +24,7 @@ technical/programming type questions.
 
 INTRO = "I'm here to help. Ask me anything!"
 
+AVAILABLE_MODELS = ("gpt-3.5-turbo", "gpt4")
 MODEL = "gpt-3.5-turbo"
 
 arg_parser = argparse.ArgumentParser(
@@ -43,3 +51,6 @@ arg_parser.add_argument(
 ARGS = arg_parser.parse_args()
 
 DEBUG = ARGS.debug
+
+if DEBUG:
+    print(f"🔧: {ENV_PATH=}")
