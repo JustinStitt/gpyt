@@ -9,7 +9,7 @@ Interact with GPT on the command line.
 ```sh
 $ pip install gpyt
 
-add `OPENAI_API_KEY="<your_openai_api_key>"` in a `.env` at $HOME
+add `OPENAI_API_KEY="<your_openai_api_key>"` in a `.env` at $HOME or `export OPENAI_API_KEY=<your_key>`
 
 $ python -m gpyt
 ```
