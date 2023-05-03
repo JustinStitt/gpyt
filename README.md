@@ -1,6 +1,6 @@
 # gpyt
 
-Interact with GPT on the command line.
+TUI GPT frontend on the command line with Textual.
 
 > WIP
 
@@ -23,19 +23,19 @@ $ python -m gpyt
 
 ### Desired Features
 
-* `copy` to copy GPT's response to clipboard
-* add gpt jailbreaks (DAN-esque)
-* `new` to start a new chat (clear all history and console window)
-* store chat logs somewhere.
-* add special flags like -t (terse) or -v (verbose) or -d (detailed) or -i
-  (informal) or -f (for file input) or --dan (for jailbreak)
-* scrolling text (adjustable speed, or disable all together)
-* use streams api?
-* model select CLI
-* add API_KEY from CLI
+- [ ] `copy` to copy GPT's response to clipboard
+- [ ] add gpt jailbreaks (DAN-esque)
+- [ ] `new` to start a new chat (clear all history and console window)
+- [ ] store chat logs somewhere.
+- [ ] add special flags like -t (terse) or -v (verbose) or -d (detailed) or -i
+- [ ] (informal) or -f (for file input) or --dan (for jailbreak)
+- [ ] scrolling text (adjustable speed, or disable all together)
+- [ ] use streams api?
+- [ ] model select CLI
+- [ ] add API_KEY from CLI
 
 
 ### Completed Features
 
-[x] loading wheel
-[x] textual !!!
+- [x] loading wheel
+- [x] textual !!!
