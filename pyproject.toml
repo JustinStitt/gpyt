@@ -17,3 +17,6 @@ openai-async = "^0.0.3"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+gpyt = 'gpyt.app:main'
