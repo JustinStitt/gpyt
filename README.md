@@ -26,3 +26,4 @@ $ python -m gpyt
 * use streams api?
 * model select CLI
 * loading wheel
+* textual !!!
