@@ -2,8 +2,10 @@
 
 Interact with GPT on the command line.
 
-
 > WIP
+
+Uses [Textual](https://textual.textualize.io).
+
 
 ### How to run:
 ```sh
@@ -15,8 +17,8 @@ $ python -m gpyt
 ```
 
 ### Desired Features
+
 * `copy` to copy GPT's response to clipboard
-* color coded responses
 * add gpt jailbreaks (DAN-esque)
 * `new` to start a new chat (clear all history and console window)
 * store chat logs somewhere.
@@ -25,5 +27,10 @@ $ python -m gpyt
 * scrolling text (adjustable speed, or disable all together)
 * use streams api?
 * model select CLI
-* loading wheel
-* textual !!!
+* add API_KEY from CLI
+
+
+### Completed Features
+
+[x] loading wheel
+[x] textual !!!
