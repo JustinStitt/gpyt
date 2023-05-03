@@ -4,6 +4,11 @@ Interact with GPT on the command line.
 
 > WIP
 
+
+## Demo
+
+![gpyt demo](./media/gpyt-show-1.gif)
+
 Uses [Textual](https://textual.textualize.io).
 
 
