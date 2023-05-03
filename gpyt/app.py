@@ -140,10 +140,11 @@ class gpyt(AssistantApp):
 
 
 def main():
-    gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
-    app = gpyt(assistant=gpt)
     app.run()
 
+
+gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
+app = gpyt(assistant=gpt)
 
 if __name__ == "__main__":
     main()
