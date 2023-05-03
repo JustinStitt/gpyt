@@ -1,74 +1,126 @@
-import pyperclip
-
+from assistant import Assistant
 from gpyt import API_KEY, ARGS, INTRO, MODEL, PROMPT
 
-from .assistant import Assistant
-from .exception import ContinueIteration
-from .debug import debug
+from textual.app import App, ComposeResult
+from textual.containers import ScrollableContainer, Container
+from textual.reactive import reactive
+from textual.widgets import (
+    Button,
+    Footer,
+    Header,
+    LoadingIndicator,
+    Markdown,
+    Static,
+    Label,
+    Input,
+)
 
 
-def handle_exit():
+class UserInput(Static):
+    """User-facing input box"""
+
+    def compose(self) -> ComposeResult:
+        yield Label(f"🤖: {INTRO}", id="help-text")
+        yield Input(placeholder="How far away is the Sun?", id="user-input")
+        # yield Button("Submit", variant="success", id="submit")
+
+    async def on_input_submitted(self, event: Input.Submitted) -> None:
+        user_input = event.input.value
+        event.input.value = ""
+        # await self.run_action(f"app.action_fetch_assistant_response('{user_input}')")
+        await app.fetch_assistant_response(user_input)
+
+
+class AssistantResponse(Static):
     """
-    Invoked by the user via `exit` or `quit`.
+    Each User/Assistant interaction
 
-    Gracefully exits the script.
+    is_dummy indicates that this widget is soon to be removed from the dom
+    and is being used purely for the loading indicator while awaiting assistant
+    response.
     """
-    print("\n🤖: Thanks for chatting!")
-    exit(0)
+
+    def __init__(self, markdown: str = "", question: str = "", is_dummy=False):
+        super().__init__()
+        self.markdown = markdown
+        self.question = question
+        self.loading_indicator = LoadingIndicator() if is_dummy else Label()
+
+    def compose(self) -> ComposeResult:
+        yield Label(f"😀: {self.question}", classes="convo")
+        yield Label("🤖:", classes="convo")
+        response_view = Markdown(self.markdown)
+        container = Container(
+            response_view, self.loading_indicator, id="response-container"
+        )
+        container.border_subtitle = "message-id: 0x18239123"
+        yield container
 
 
-def handle_copy(message: str):
-    """
-    Invoked by the user via `copy` or `yank`.
+class AssistantResponses(Static):
+    """Container for individual AssistantResponse widgets"""
 
-    Copies to user's system clipboard.
-    """
-    pyperclip.copy(message)
-    print(f"\n🔧: Copied previous GPT response to clipboard!\n")
+    def compose(self) -> ComposeResult:
+        self.container = ScrollableContainer()
 
+        yield self.container
 
-def handle_user_input(user_input: str, previous_gpt_response: str):
-    """
-    Handles the specific meta commands that the user can enter.
-
-    raises ContinueIteration if GPT should not respond to the command.
-    """
-    if user_input.lower() in ("exit", "quit"):
-        handle_exit()
-
-    if user_input.lower() in ("copy", "yank"):
-        handle_copy(previous_gpt_response)
-        raise ContinueIteration()
+    def add_response(
+        self, markdown: str, question: str, dummy_response: AssistantResponse
+    ) -> None:
+        new_response = AssistantResponse(markdown=markdown, question=question)
+        self.container.mount(new_response)
+        dummy_response.remove()
+        new_response.scroll_visible()
 
 
-def main():
-    """
-    Main loop which handles user interaction and gpt feedback loop.
+class AssistantApp(App):
+    """Base app for all user->assistant interactions"""
 
-    Some dogma: maintain readability.
-    """
-    gpt = Assistant(
-        api_key=API_KEY or "", model=MODEL, prompt=PROMPT, memory=not ARGS.no_memory
-    )
+    BINDINGS = [("ctrl+b", "toggle_dark", "Toggle Dark Mode")]
 
-    print(f"\n🤖: {INTRO}", flush=True, end="\n\n")
-    previous_gpt_response = INTRO  # for handle_copy purposes
+    CSS_PATH = "styles.cssx"
 
-    while 1:
-        user_input = input("🙂> ")
+    def __init__(self, assistant: Assistant):
+        super().__init__()
+        self.assistant = assistant
 
-        try:
-            handle_user_input(user_input, previous_gpt_response)
-        except ContinueIteration:
-            debug(
-                f"Special command '{user_input}' entered. ContinueIteration raised!\n",
-            )
-            continue
+    def compose(self) -> ComposeResult:
+        header = Header(show_clock=True)
+        header.tall = False
+        yield header
+        yield Footer()
+        self.assistant_responses = AssistantResponses()
+        self.assistant_responses.border_title = "Conversation History"
+        user_input = UserInput()
+        user_input.border_subtitle = "Press Enter To Submit"
+        # yield ScrollableContainer(user_input, assistant_responses)
+        yield user_input
+        yield self.assistant_responses
 
-        gpt_response = gpt.get_response(user_input)
-        previous_gpt_response = gpt_response
-        print(f"\n🤖: {gpt_response}", flush=True, end="\n\n")
+    async def fetch_assistant_response(self, user_input: str) -> None:
+        dummy_assistant_response = AssistantResponse(question=user_input, is_dummy=True)
+        self.assistant_responses.container.mount(dummy_assistant_response)
+        dummy_assistant_response.scroll_visible()
+        assistant_response_markdown = await self.assistant.get_response(user_input)
+        self.assistant_responses.add_response(
+            markdown=assistant_response_markdown,
+            question=user_input,
+            dummy_response=dummy_assistant_response,
+        )
+
+    def action_toggle_dark(self) -> None:
+        self.dark = not self.dark
+
+
+class gpyt(AssistantApp):
+    """Used strictly for the purposes of renaming the Header widget."""
+
+    def __init__(self, assistant: Assistant):
+        super().__init__(assistant=assistant)
 
 
 if __name__ == "__main__":
-    main()
+    gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
+    app = gpyt(assistant=gpt)
+    app.run()

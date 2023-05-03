@@ -1,0 +1,51 @@
+Screen {
+  overflow: hidden;
+}
+
+UserInput {
+  border: panel $primary-background;
+  background: $surface-lighten-1;
+  margin: 2;
+  margin-top: 3;
+  padding: 1;
+  dock: bottom;
+  border-subtitle-color: $surface-lighten-3;
+}
+
+AssistantResponses {
+  border: panel $primary-background-lighten-1;
+  margin: 1;
+  border-title-align: center;
+  border-title-color: $text-muted;
+  background: $surface-lighten-1;
+}
+
+AssistantResponse {
+  padding: 1;
+}
+
+#response-container {
+  background: $surface;
+  border: tall $surface-lighten-3;
+  margin-bottom: 1;
+  border-subtitle-color: $panel-lighten-2;
+  height: auto;
+}
+
+#help-text {
+  margin: 1;
+}
+
+#submit {
+  margin: 1;
+  width: 100%;
+}
+
+
+.convo {
+  margin: 1;
+}
+
+LoadingIndicator {
+  height: 1;
+}

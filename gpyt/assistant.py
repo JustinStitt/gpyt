@@ -1,4 +1,5 @@
-import openai
+import openai_async
+import asyncio
 
 
 class Assistant:
@@ -16,7 +17,6 @@ class Assistant:
         self.messages = [
             {"role": "system", "content": self.prompt},
         ]
-        openai.api_key = self.api_key
 
     def clear_history(self):
         """
@@ -25,7 +25,7 @@ class Assistant:
         """
         self.messages = [self.messages[0]]
 
-    def get_response(self, user_input: str) -> str:
+    async def get_response(self, user_input: str) -> str:
         """
         Use OpenAI API to retrieve a ChatCompletion response from a GPT model.
 
@@ -37,13 +37,30 @@ class Assistant:
         self.messages.append({"role": "user", "content": user_input})
 
         try:
-            response = openai.ChatCompletion.create(  # type: ignore
-                model=self.model, messages=self.messages
-            )["choices"][0]["message"]
+            response = await openai_async.chat_complete(  # type: ignore
+                api_key=self.api_key,
+                timeout=30,
+                payload={"model": self.model, "messages": self.messages},
+            )
         except:
-            return "Could not generate Assistant completion. Ensure you've configured an API_KEY and are connected to the internet!"
+            return "Could not generate Assistant completion. Ensure you've configured an API_KEY and are connected to the internet! This could also be due to a timeout, check your latency to openai!"
+
+        message = response.json()["choices"][0]["message"]
 
         if self.memory:
-            self.messages.append(response)
+            self.messages.append(message)
 
-        return response["content"]
+        return message["content"]
+
+
+async def _test() -> None:
+    from gpyt import API_KEY, MODEL, PROMPT
+
+    gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
+
+    response = await gpt.get_response("Hi, how are you!")
+    print(response)
+
+
+if __name__ == "__main__":
+    asyncio.run(_test())
