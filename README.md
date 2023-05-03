@@ -29,8 +29,6 @@ $ python -m gpyt
 - [ ] store chat logs somewhere.
 - [ ] add special flags like -t (terse) or -v (verbose) or -d (detailed) or -i
 - [ ] (informal) or -f (for file input) or --dan (for jailbreak)
-- [ ] scrolling text (adjustable speed, or disable all together)
-- [ ] use streams api?
 - [ ] model select CLI
 - [ ] add API_KEY from CLI
 
@@ -39,3 +37,5 @@ $ python -m gpyt
 
 - [x] loading wheel
 - [x] textual !!!
+- [x] scrolling text (adjustable speed, or disable all together)
+- [x] use streams api?
