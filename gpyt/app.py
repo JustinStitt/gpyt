@@ -1,4 +1,4 @@
-from assistant import Assistant
+from .assistant import Assistant
 from gpyt import API_KEY, ARGS, INTRO, MODEL, PROMPT
 from typing import Generator
 
@@ -139,7 +139,11 @@ class gpyt(AssistantApp):
         super().__init__(assistant=assistant)
 
 
-if __name__ == "__main__":
+def main():
     gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
     app = gpyt(assistant=gpt)
     app.run()
+
+
+if __name__ == "__main__":
+    main()
