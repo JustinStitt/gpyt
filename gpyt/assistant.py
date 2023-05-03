@@ -1,5 +1,5 @@
-import openai_async
-import asyncio
+import openai
+from typing import Generator
 
 
 class Assistant:
@@ -17,6 +17,7 @@ class Assistant:
         self.messages = [
             {"role": "system", "content": self.prompt},
         ]
+        openai.api_key = self.api_key
 
     def clear_history(self):
         """
@@ -25,7 +26,7 @@ class Assistant:
         """
         self.messages = [self.messages[0]]
 
-    async def get_response(self, user_input: str) -> str:
+    def get_response_stream(self, user_input: str) -> Generator:
         """
         Use OpenAI API to retrieve a ChatCompletion response from a GPT model.
 
@@ -36,31 +37,34 @@ class Assistant:
             self.clear_history()
         self.messages.append({"role": "user", "content": user_input})
 
-        try:
-            response = await openai_async.chat_complete(  # type: ignore
-                api_key=self.api_key,
-                timeout=30,
-                payload={"model": self.model, "messages": self.messages},
-            )
-        except:
-            return "Could not generate Assistant completion. Ensure you've configured an API_KEY and are connected to the internet! This could also be due to a timeout, check your latency to openai!"
+        response = openai.ChatCompletion.create(  # type: ignore
+            model=self.model,
+            messages=self.messages,
+            stream=True,
+        )
 
-        message = response.json()["choices"][0]["message"]
+        return response  # type: ignore
 
-        if self.memory:
-            self.messages.append(message)
+    def log_assistant_response(self, final_response: str) -> None:
+        if not self.memory:
+            return
 
-        return message["content"]
+        self.messages.append({"role": "assistant", "content": final_response})
 
 
-async def _test() -> None:
+def _test() -> None:
     from gpyt import API_KEY, MODEL, PROMPT
 
     gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
 
-    response = await gpt.get_response("Hi, how are you!")
-    print(response)
+    # response = gpt.get_response("Hi, how are you!")
+    response_iterator = gpt.get_response_stream("hi how are you!")
+    for response in response_iterator:
+        try:
+            print(response["choices"][0]["delta"]["content"], end="", flush=True)
+        except:
+            continue
 
 
 if __name__ == "__main__":
-    asyncio.run(_test())
+    _test()

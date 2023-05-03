@@ -1,6 +1,8 @@
 from assistant import Assistant
 from gpyt import API_KEY, ARGS, INTRO, MODEL, PROMPT
+from typing import Generator
 
+from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import ScrollableContainer, Container
 from textual.reactive import reactive
@@ -8,7 +10,6 @@ from textual.widgets import (
     Button,
     Footer,
     Header,
-    LoadingIndicator,
     Markdown,
     Static,
     Label,
@@ -27,34 +28,31 @@ class UserInput(Static):
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         user_input = event.input.value
         event.input.value = ""
-        # await self.run_action(f"app.action_fetch_assistant_response('{user_input}')")
-        await app.fetch_assistant_response(user_input)
+        app.fetch_assistant_response(user_input)
 
 
 class AssistantResponse(Static):
     """
     Each User/Assistant interaction
-
-    is_dummy indicates that this widget is soon to be removed from the dom
-    and is being used purely for the loading indicator while awaiting assistant
-    response.
     """
 
-    def __init__(self, markdown: str = "", question: str = "", is_dummy=False):
+    def __init__(self, question: str = ""):
         super().__init__()
-        self.markdown = markdown
         self.question = question
-        self.loading_indicator = LoadingIndicator() if is_dummy else Label()
+        self.response_view = Markdown()
 
     def compose(self) -> ComposeResult:
-        yield Label(f"😀: {self.question}", classes="convo")
+        self.user_question = Label(f"😀: {self.question}", classes="convo")
+        yield self.user_question
         yield Label("🤖:", classes="convo")
-        response_view = Markdown(self.markdown)
-        container = Container(
-            response_view, self.loading_indicator, id="response-container"
-        )
+        container = Container(self.response_view, id="response-container")
         container.border_subtitle = "message-id: 0x18239123"
         yield container
+
+    @work()
+    def update_response(self, content: str) -> None:
+        app.call_from_thread(self.response_view.update, content)
+        # self.response_view.update(content)
 
 
 class AssistantResponses(Static):
@@ -65,13 +63,31 @@ class AssistantResponses(Static):
 
         yield self.container
 
-    def add_response(
-        self, markdown: str, question: str, dummy_response: AssistantResponse
-    ) -> None:
-        new_response = AssistantResponse(markdown=markdown, question=question)
-        self.container.mount(new_response)
-        dummy_response.remove()
-        new_response.scroll_visible()
+    @work()
+    def add_response(self, stream: Generator, question: str) -> None:
+        new_response = AssistantResponse(question=question)
+        app.call_from_thread(self.container.mount, new_response)
+        app.call_from_thread(new_response.scroll_visible)
+        markdown = ""
+        update_frequency = 10
+        i = 0
+        for data in stream:
+            i += 1
+            try:  # HACK: should check for attr, not try/except
+                markdown = markdown + data["choices"][0]["delta"]["content"]
+                if i % update_frequency == 0:
+                    app.call_from_thread(new_response.update_response, markdown)
+                    app.call_from_thread(self.container.scroll_end)
+            except:
+                continue
+
+        app.call_from_thread(new_response.update_response, markdown)
+        # app.call_from_thread(self.container.scroll_page_up)
+        app.call_from_thread(
+            new_response.user_question.scroll_visible, duration=2, easing="out_back"
+        )
+        app.assistant.log_assistant_response(markdown)
+        print("scrolling up")
 
 
 class AssistantApp(App):
@@ -98,15 +114,18 @@ class AssistantApp(App):
         yield user_input
         yield self.assistant_responses
 
-    async def fetch_assistant_response(self, user_input: str) -> None:
-        dummy_assistant_response = AssistantResponse(question=user_input, is_dummy=True)
-        self.assistant_responses.container.mount(dummy_assistant_response)
-        dummy_assistant_response.scroll_visible()
-        assistant_response_markdown = await self.assistant.get_response(user_input)
-        self.assistant_responses.add_response(
-            markdown=assistant_response_markdown,
+    def test(self, x: int) -> int:
+        return x + 4
+
+    @work()
+    def fetch_assistant_response(self, user_input: str) -> None:
+        # self.run_worker(self.assistant.get_response_stream(user_input))
+        assistant_response_stream = self.assistant.get_response_stream(user_input)
+
+        app.call_from_thread(
+            self.assistant_responses.add_response,
             question=user_input,
-            dummy_response=dummy_assistant_response,
+            stream=assistant_response_stream,
         )
 
     def action_toggle_dark(self) -> None:

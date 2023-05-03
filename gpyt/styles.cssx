@@ -1,3 +1,7 @@
+* {
+  transition: color 1000ms in_quint;
+}
+
 Screen {
   overflow: hidden;
 }
