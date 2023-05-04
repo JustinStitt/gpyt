@@ -1,5 +1,6 @@
 import openai
 from typing import Generator
+from gpyt import SUMMARY_PROMPT
 
 
 class Assistant:
@@ -9,10 +10,20 @@ class Assistant:
     It can generate responses based on user input and conversation history.
     """
 
-    def __init__(self, *, api_key: str, model: str, prompt: str, memory: bool = True):
+    kDEFAULT_PROMPT_FALLTHROUGH = "User Question"
+
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        model: str,
+        prompt: str,
+        memory: bool = True,
+    ):
         self.api_key = api_key
         self.model = model
         self.prompt = prompt
+        self.summary_prompt = SUMMARY_PROMPT
         self.memory = memory
         self.messages = [
             {"role": "system", "content": self.prompt},
@@ -45,6 +56,25 @@ class Assistant:
 
         return response  # type: ignore
 
+    def get_response(self, user_input: str) -> str:
+        """Get an entire string back from the assistant"""
+        messages = [
+            {"role": "system", "content": self.summary_prompt},
+            {"role": "user", "content": user_input.rstrip()},
+        ]
+        response = openai.ChatCompletion.create(model=self.model, messages=messages)
+
+        return response["choices"][0]["message"]["content"]  # type: ignore
+
+    def get_conversation_summary(self, initial_message: str) -> str:
+        """Generate a short 6 word or less summary of the user\'s first message"""
+        try:
+            summary = self.get_response(initial_message)
+        except:
+            return Assistant.kDEFAULT_PROMPT_FALLTHROUGH
+
+        return summary
+
     def log_assistant_response(self, final_response: str) -> None:
         if not self.memory:
             return
@@ -57,13 +87,15 @@ def _test() -> None:
 
     gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
 
-    # response = gpt.get_response("Hi, how are you!")
-    response_iterator = gpt.get_response_stream("hi how are you!")
-    for response in response_iterator:
-        try:
-            print(response["choices"][0]["delta"]["content"], end="", flush=True)
-        except:
-            continue
+    # response = gpt.get_response("How do I make carrot cake?")
+    summary = gpt.get_conversation_summary("How do I get into Dirt Biking?")
+    print(f"{summary = }")
+    # response_iterator = gpt.get_response_stream("hi how are you!")
+    # for response in response_iterator:
+    #     try:
+    #         print(response["choices"][0]["delta"]["content"], end="", flush=True)
+    #     except:
+    #         continue
 
 
 if __name__ == "__main__":

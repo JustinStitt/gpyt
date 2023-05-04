@@ -20,7 +20,7 @@ AssistantResponses {
   border: panel $primary-background-lighten-1;
   margin: 1;
   border-title-align: center;
-  border-title-color: $text-muted;
+  border-title-color: rgb(225,225,225);
   background: $surface-lighten-1;
 }
 

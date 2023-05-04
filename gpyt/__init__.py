@@ -40,6 +40,8 @@ For example, if the user is asking about football use this format
 --end intermediate to complex topics instructions--
 """
 
+SUMMARY_PROMPT = "Summarize the user's input in 6 words or less. Try to capture the big idea. DO NOT USE more than 6 words and DO NOT answer their question. Simply echo back to them your summary."
+
 INTRO = "Ask me anything. I'll try to assist you!"
 
 AVAILABLE_MODELS = ("gpt-3.5-turbo", "gpt4")

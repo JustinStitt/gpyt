@@ -31,6 +31,8 @@ $ python -m gpyt
 - [ ] (informal) or -f (for file input) or --dan (for jailbreak)
 - [ ] model select CLI
 - [ ] add API_KEY from CLI
+- [ ] add special error handling for RateLimiting or early stops to generation of text stream
+- [ ] load saved conversations
 
 
 ### Completed Features
