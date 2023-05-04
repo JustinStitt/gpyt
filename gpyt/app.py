@@ -1,23 +1,32 @@
 import json
-from typing import Generator, Callable
 import os
 from pathlib import Path
-
+from typing import Callable, Generator
 
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, ScrollableContainer
 from textual.reactive import reactive
-from textual.widgets import Button, Footer, Header, Input, Label, Markdown, Static
+from textual.widgets import (
+    Button,
+    Footer,
+    Header,
+    Input,
+    Label,
+    ListItem,
+    ListView,
+    Markdown,
+    Static,
+)
 
-from gpyt import API_KEY, ARGS, INTRO, MODEL, PROMPT, SUMMARY_PROMPT
+from gpyt import API_KEY, ARGS, INTRO, MODEL, PROMPT
 
 from .assistant import Assistant
 from .conversation import Conversation, Message
 from .id import get_id
 
 
-class UserInput(Static):
+class UserInput(Container):
     """
     User-facing input box
 
@@ -29,7 +38,9 @@ class UserInput(Static):
     def __init__(self):
         super().__init__()
         self.keyword_mappings: dict[str, Callable] = {
-            "save": app.save_active_conversation_to_disk
+            "save": app.save_active_conversation_to_disk,
+            "new": app.start_new_conversation,
+            "clear": app.start_new_conversation,
         }
 
     def compose(self) -> ComposeResult:
@@ -50,6 +61,59 @@ class UserInput(Static):
             return  # don't give anything to the assistant if we use a special callback
 
         app.fetch_assistant_response(user_input)
+
+
+class ConversationOption(ListItem):
+    ELLIPSIFY_CUTOFF = 36
+
+    def __init__(self, conversation: Conversation):
+        super().__init__()
+        self.conversation = conversation
+
+    def compose(self) -> ComposeResult:
+        yield Label(self._ellipsify_long_summary(self.conversation.summary))
+
+    def _ellipsify_long_summary(self, summary: str) -> str:
+        if len(summary) < ConversationOption.ELLIPSIFY_CUTOFF:
+            return summary
+
+        summary = summary[: ConversationOption.ELLIPSIFY_CUTOFF - 2] + "..."
+        return summary
+
+    def select(self) -> None:
+        print(self.conversation.summary)
+
+
+class StartNewConversationOption(ListItem):
+    def compose(self) -> ComposeResult:
+        yield Label("Start a new conversation")
+
+    def select(self) -> None:
+        print("selected new convo")
+
+
+class VimLikeListView(ListView):
+    BINDINGS = [("j", "cursor_down", "Cursor Down"), ("k", "cursor_up", "Cursor Up")]
+
+    def action_select_cursor(self) -> None:
+        selected = self.highlighted_child
+
+        assert isinstance(selected, StartNewConversationOption) or isinstance(
+            selected, ConversationOption
+        ), "Invalid selection type"
+
+        selected.select()
+
+
+class PastConversations(Container):
+    def compose(self) -> ComposeResult:
+        self.start_new_conversation_option = StartNewConversationOption()
+        self.options = VimLikeListView(self.start_new_conversation_option)
+        yield self.options
+
+    def add_conversation_option(self, conversation: Conversation) -> None:
+        option = ConversationOption(conversation)
+        self.options.mount(option)
 
 
 class AssistantResponse(Static):
@@ -114,7 +178,10 @@ class AssistantResponses(Static):
 class AssistantApp(App):
     """Base app for all user->assistant interactions"""
 
-    BINDINGS = [("ctrl+b", "toggle_dark", "Toggle Dark Mode")]
+    BINDINGS = [
+        ("ctrl+b", "toggle_dark", "Toggle Dark Mode"),
+        ("ctrl+n", "toggle_sidebar", "Past Conversations"),
+    ]
 
     CSS_PATH = "styles.cssx"
 
@@ -130,11 +197,43 @@ class AssistantApp(App):
         yield header
         yield Footer()
         self.assistant_responses = AssistantResponses()
-        self.assistant_responses.border_title = f"Conversation History{self.active_conversation.summary if self.active_conversation else ''}"
+        self.assistant_responses.border_title = "Conversation History"
+
         user_input = UserInput()
         user_input.border_subtitle = "Press Enter To Submit"
         yield user_input
         yield self.assistant_responses
+        self.past_conversations = PastConversations(classes="hidden")
+        self.past_conversations.border_title = "Past Conversations"
+        yield self.past_conversations
+
+    def get_saved_conversations_path(self) -> Path:
+        """Return the path where conversations are to be saved/loaded from"""
+        GPT_CACHE_DIR = os.getenv("GPT_CACHE_DIR")
+        HOME_DIR = os.getenv("HOME")
+
+        if not GPT_CACHE_DIR:
+            # if no GPT_CACHE_DIR env provided, default to $HOME... ensure it exists!
+            assert HOME_DIR, "Missing $HOME env var"
+
+        return Path(
+            GPT_CACHE_DIR if GPT_CACHE_DIR else HOME_DIR,  # type: ignore
+            ".cache",
+            "gpyt",
+            "conversations",
+        )
+
+    def load_saved_conversations(self) -> None:
+        """Load conversations from saved conversation path"""
+        conversations_path = self.get_saved_conversations_path()
+        conversation_file_paths = conversations_path.glob(pattern=r"*.json")
+
+        for path in conversation_file_paths:
+            with open(path, "r") as fd:
+                raw_json = json.load(fd)
+                conversation = Conversation.parse_obj(raw_json)
+                self.conversations.append(conversation)
+                self.past_conversations.add_conversation_option(conversation)
 
     def save_active_conversation_to_disk(self) -> str:
         """Save the active conversation to disk and return the file path"""
@@ -153,19 +252,8 @@ class AssistantApp(App):
             ), "When not supplied a conversation to save to disk, there must be an active conversation!"
             conversation = self.active_conversation
 
-        GPT_CACHE_DIR = os.getenv("GPT_CACHE_DIR")
-        HOME_DIR = os.getenv("HOME")
+        conversations_path = self.get_saved_conversations_path()
 
-        if not GPT_CACHE_DIR:
-            # if no GPT_CACHE_DIR env provided, default to $HOME... ensure it exists!
-            assert HOME_DIR, "Missing $HOME env var"
-
-        conversations_path = Path(
-            GPT_CACHE_DIR if GPT_CACHE_DIR else HOME_DIR,  # type: ignore
-            ".cache",
-            "gpyt",
-            "conversations",
-        )
         print(f"{conversations_path = }")
         os.makedirs(conversations_path, exist_ok=True)
 
@@ -184,6 +272,21 @@ class AssistantApp(App):
         self.conversations.append(new_convo)
         self.active_conversation = new_convo
         self.assistant_responses.border_subtitle = f"convo-id: 0x{new_convo.id}"
+
+    def clear_active_conversation(self) -> None:
+        self.assistant_responses.remove()
+        self.assistant_responses = AssistantResponses()
+        self.mount(self.assistant_responses)
+        self.assistant_responses.border_title = "Conversation History"
+
+    def start_new_conversation(self) -> None:
+        """Save current conversation, clear it, start a new fresh one"""
+        if not self.active_conversation:
+            return
+        self.save_active_conversation_to_disk()
+        self.clear_active_conversation()
+        self.past_conversations.add_conversation_option(self.active_conversation)
+        self.active_conversation = None
 
     @work()
     def fetch_assistant_response(self, user_input: str) -> None:
@@ -204,6 +307,23 @@ class AssistantApp(App):
 
     def action_toggle_dark(self) -> None:
         self.dark = not self.dark
+
+    def action_toggle_sidebar(self) -> None:
+        past_conversations = self.query_one(PastConversations)
+        if not past_conversations.has_class("opened-gt-once"):
+            try:
+                self.load_saved_conversations()
+            except:
+                past_conversations.add_conversation_option(
+                    Conversation(
+                        summary=f"Failed to load conversations from {self.get_saved_conversations_path()}",
+                        id="-1",
+                        log=[],
+                    )
+                )
+        past_conversations.add_class("opened-gt-once")
+        past_conversations.toggle_class("hidden")
+        self.set_focus(past_conversations.options)
 
 
 class gpyt(AssistantApp):

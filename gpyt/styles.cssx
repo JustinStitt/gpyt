@@ -4,6 +4,7 @@
 
 Screen {
   overflow: hidden;
+  layers: base overlay;
 }
 
 UserInput {
@@ -11,6 +12,7 @@ UserInput {
   background: $surface-lighten-1;
   margin: 2;
   margin-top: 3;
+  height: 10;
   padding: 1;
   dock: bottom;
   border-subtitle-color: $surface-lighten-3;
@@ -52,4 +54,23 @@ AssistantResponse {
 
 LoadingIndicator {
   height: 1;
+}
+
+PastConversations {
+  layer: overlay;
+  margin-top: 1;
+  width: 40;
+  height: 60%;
+  border: panel $panel-lighten-2;
+  border-title-color: rgb(225,225,225);
+  background: $panel;
+  transition: offset 400ms in_back;
+}
+
+PastConversations:focus-within {
+  offset-x: 0 !important;
+}
+
+PastConversations.hidden {
+  offset-x: -100%;
 }
