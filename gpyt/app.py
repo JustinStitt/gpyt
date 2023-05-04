@@ -81,7 +81,7 @@ class ConversationOption(ListItem):
         return summary
 
     def select(self) -> None:
-        print(self.conversation.summary)
+        app.assistant_responses.setup_from_presaved_conversation(self.conversation)
 
 
 class StartNewConversationOption(ListItem):
@@ -145,6 +145,36 @@ class AssistantResponses(Static):
         self.container = ScrollableContainer()
 
         yield self.container
+
+    def setup_from_presaved_conversation(self, conversation: Conversation) -> None:
+        """Load conversation into conversation history widget from Conversation model"""
+        # TODO: clear previous history
+
+        app.active_conversation = conversation
+        app._set_summary_title_id(conversation.summary, conversation.id)
+        new_history = []
+
+        for i in range(0, len(conversation.log) - 1, 2):
+            user_message = conversation.log[i]
+            assert (
+                user_message.role == "user"
+            ), "Improper role for setup from presaved convesation"
+
+            assistant_response = conversation.log[i + 1]
+            new_response = AssistantResponse(
+                question=user_message.content, id=user_message.id
+            )
+            self.container.mount(new_response)
+            assert (
+                assistant_response.role == "assistant"
+            ), "Improper role for setup from presaved convesation"
+            new_response.update_response(assistant_response.content)
+            new_history.append({"role": "user", "content": user_message.content})
+            new_history.append(
+                {"role": "assistant", "content": assistant_response.content}
+            )
+
+        app.assistant.set_history(new_history)
 
     @work()
     def add_response(self, stream: Generator, message: Message) -> None:
@@ -263,15 +293,16 @@ class AssistantApp(App):
 
         return str(path)
 
+    def _set_summary_title_id(self, summary: str, id: str) -> None:
+        self.assistant_responses.border_title = f"Conversation History - {summary}"
+        self.assistant_responses.border_subtitle = f"convo-id: 0x{id}"
+
     def _setup_fresh_convo(self, initial_user_input: str) -> None:
         summary = self.assistant.get_conversation_summary(initial_user_input)
         new_convo = Conversation(id=get_id(), summary=summary, log=[])
-        self.assistant_responses.border_title = (
-            f"Conversation History - {new_convo.summary}"
-        )
+        self._set_summary_title_id(summary, new_convo.id)
         self.conversations.append(new_convo)
         self.active_conversation = new_convo
-        self.assistant_responses.border_subtitle = f"convo-id: 0x{new_convo.id}"
 
     def clear_active_conversation(self) -> None:
         self.assistant_responses.remove()

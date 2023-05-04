@@ -30,6 +30,12 @@ class Assistant:
         ]
         openai.api_key = self.api_key
 
+    def set_history(self, new_history: list):
+        """Reassign all message history except for system message"""
+        sys_prompt = self.messages[0]
+        self.messages = new_history[::]
+        self.messages.insert(0, sys_prompt)
+
     def clear_history(self):
         """
         Wipe all message history during this conversation, except for the
