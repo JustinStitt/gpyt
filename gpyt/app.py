@@ -90,7 +90,7 @@ class StartNewConversationOption(ListItem):
         yield Label("Start a new conversation")
 
     def select(self) -> None:
-        print("selected new convo")
+        app.start_new_conversation()
 
 
 class VimLikeListView(ListView):
@@ -109,7 +109,6 @@ class VimLikeListView(ListView):
         if app.past_conversations.has_class("hidden"):
             user_input = app.query_one("#user-input")
             app.set_focus(user_input)
-            print("FOCUSED", event)
 
 
 class PastConversations(Container):
@@ -120,7 +119,7 @@ class PastConversations(Container):
 
     def add_conversation_option(self, conversation: Conversation) -> None:
         option = ConversationOption(conversation)
-        self.options.mount(option)
+        self.options.mount(option, before=1)
 
 
 class AssistantResponse(Static):
@@ -219,6 +218,7 @@ class AssistantApp(App):
     BINDINGS = [
         ("ctrl+b", "toggle_dark", "Toggle Dark Mode"),
         ("ctrl+n", "toggle_sidebar", "Past Conversations"),
+        ("ctrl+s", "save_conversation", "Save Conversation"),
     ]
 
     CSS_PATH = "styles.cssx"
@@ -261,10 +261,16 @@ class AssistantApp(App):
             "conversations",
         )
 
+    def action_save_conversation(self) -> None:
+        self.save_active_conversation_to_disk()
+
     def load_saved_conversations(self) -> None:
         """Load conversations from saved conversation path"""
         conversations_path = self.get_saved_conversations_path()
         conversation_file_paths = conversations_path.glob(pattern=r"*.json")
+        conversation_file_paths = sorted(
+            conversation_file_paths, key=lambda f: f.stat().st_mtime
+        )
 
         for path in conversation_file_paths:
             with open(path, "r") as fd:
@@ -292,7 +298,6 @@ class AssistantApp(App):
 
         conversations_path = self.get_saved_conversations_path()
 
-        print(f"{conversations_path = }")
         os.makedirs(conversations_path, exist_ok=True)
 
         path = Path(conversations_path, f"convo-{conversation.id}.json")
@@ -322,9 +327,15 @@ class AssistantApp(App):
         """Save current conversation, clear it, start a new fresh one"""
         if not self.active_conversation:
             return
+
         self.save_active_conversation_to_disk()
         self.clear_active_conversation()
-        if save_current:
+        exists_already = Path(
+            self.get_saved_conversations_path(),
+            f"convo-{self.active_conversation.id}.json",
+        ).exists()
+
+        if save_current and not exists_already:
             self.past_conversations.add_conversation_option(self.active_conversation)
         self.active_conversation = None
 

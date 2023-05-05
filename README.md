@@ -26,13 +26,12 @@ $ python -m gpyt
 - [ ] `copy` to copy GPT's response to clipboard
 - [ ] add gpt jailbreaks (DAN-esque)
 - [ ] `new` to start a new chat (clear all history and console window)
-- [ ] store chat logs somewhere.
 - [ ] add special flags like -t (terse) or -v (verbose) or -d (detailed) or -i
 - [ ] (informal) or -f (for file input) or --dan (for jailbreak)
 - [ ] model select CLI
 - [ ] add API_KEY from CLI
 - [ ] add special error handling for RateLimiting or early stops to generation of text stream
-- [ ] load saved conversations
+- [ ] gpt4free integration (for 3.5 and 4)
 
 
 ### Completed Features
@@ -41,3 +40,5 @@ $ python -m gpyt
 - [x] textual !!!
 - [x] scrolling text (adjustable speed, or disable all together)
 - [x] use streams api?
+- [x] store chat logs somewhere.
+- [x] load saved conversations
