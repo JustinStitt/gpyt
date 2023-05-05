@@ -14,7 +14,7 @@ def get_id(length=16) -> str:
     return _id
 
 
-# TODO: load previous convo and message ids to ensure no overlap
+# TODO: load previous convo and message ids to ensure no overlap (pretty unlikely though lol)
 get_id.seen = set()
 
 if __name__ == "__main__":

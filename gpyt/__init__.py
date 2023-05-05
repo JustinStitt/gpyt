@@ -13,7 +13,19 @@ if API_KEY is None:
 
 assert (
     API_KEY is not None
-), "⚠ Missing API KEY: Please set one in your `.env` via `OPENAI_API_KEY=<your_key>` or using your OS's enviroment variables like `export OPENAI_API_KEY=<my_key>`⚠"
+), """
+
+❗Missing OpenAI API Key ❗
+
+Steps to fix this issue:
+
+    1) Get an OpenAI Key from https://platform.openai.com/account/api-keys
+    2) Create a `.env` file located in your $HOME directory.
+    3) add `OPENAI_API_KEY="your_api_key"` to the `.env` file.
+    4) or, you can run `$ EXPORT OPENAI_API_KEY="your_api_key"` to set a key for the active shell session.
+    5) rerun this program with `$ gpyt` or `$ python -m gpyt`
+
+"""
 
 PROMPT = """
 You are a helpful assistant. Be accurate and concise with your responses.
