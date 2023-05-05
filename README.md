@@ -36,3 +36,4 @@ Uses [Textual](https://textual.textualize.io).
 - [ ] add API_KEY from CLI
 - [ ] gpt4free integration (for 3.5 and 4)
 - [ ] refactor the f**k out of `app.py`
+- [ ] copy/pasting with mouse

@@ -1,5 +1,6 @@
 import json
 import os
+import pyperclip
 from pathlib import Path
 from typing import Callable, Generator
 from rich.style import Style
@@ -140,6 +141,7 @@ class AssistantResponse(Static):
         self.question = question
         self._id = id
         self.response_view = Markdown()
+        self._last_content = ""
 
     def compose(self) -> ComposeResult:
         self.user_question = Label(f"😀: {self.question}", classes="convo")
@@ -149,9 +151,13 @@ class AssistantResponse(Static):
         container.border_subtitle = f"message-id: 0x{self._id}"
         yield container
 
+    def on_click(self) -> None:
+        pyperclip.copy(self._last_content)
+
     @work()
     def update_response(self, content: str) -> None:
         app.call_from_thread(self.response_view.update, content)
+        self._last_content = content
 
 
 class AssistantResponses(Static):
@@ -428,6 +434,8 @@ class AssistantApp(App):
 
     def action_scroll_convo_down(self) -> None:
         self.assistant_responses.container.scroll_relative(y=4)
+
+
 class gpyt(AssistantApp):
     """Used strictly for the purposes of renaming the Header widget."""
 
