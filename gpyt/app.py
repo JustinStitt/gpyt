@@ -196,7 +196,6 @@ class AssistantResponses(Static):
 
         app.assistant.set_history(new_history)
         app.action_toggle_sidebar()
-        app.focus_user_input()
 
     @work()
     def add_response(self, stream: Generator, message: Message) -> None:
@@ -235,6 +234,7 @@ class AssistantApp(App):
     BINDINGS = [
         ("ctrl+b", "toggle_dark", "Toggle Dark Mode"),
         ("ctrl+n", "toggle_sidebar", "Past Conversations"),
+        ("ctrl+c", "handle_exit", "Quit"),
     ]
 
     CSS_PATH = "styles.cssx"
@@ -365,7 +365,6 @@ class AssistantApp(App):
         self.clear_active_conversation()
         self.active_conversation = None
         self.action_toggle_sidebar()
-        self.focus_user_input()
 
     @work()
     def fetch_assistant_response(self, user_input: str) -> None:
@@ -409,11 +408,17 @@ class AssistantApp(App):
                 )
         self.past_conversations.add_class("opened-gt-once")
         self.past_conversations.toggle_class("hidden")
+        if self.past_conversations.has_class("hidden"):
+            app.focus_user_input()
+            return
         self.set_focus(self.past_conversations.options)
 
     def focus_user_input(self) -> None:
         inp = self.query_one("#user-input")
         inp.focus()
+
+    def action_handle_exit(self) -> None:
+        exit()
 
 
 class gpyt(AssistantApp):

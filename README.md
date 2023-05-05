@@ -1,44 +1,38 @@
 # gpyt
 
-TUI GPT frontend on the command line with Textual.
+> GPT in your terminal.
 
-> WIP
+>> WIP
 
 
 ## Demo
 
-![gpyt demo](./media/gpyt-show-1.gif)
+![gpyt demo](https://github.com/JustinStitt/gpyt/blob/master/media/gpyt-show-1.gif?raw=true)
 
 Uses [Textual](https://textual.textualize.io).
 
 
-### How to run:
-```sh
-$ pip install gpyt
+### Installation & Usage
+1) `$ pip install gpyt`
 
-add `OPENAI_API_KEY="<your_openai_api_key>"` in a `.env` at $HOME or `export OPENAI_API_KEY=<your_key>`
+2) add `OPENAI_API_KEY="<your_openai_api_key>"` in a `.env` at $HOME or `export OPENAI_API_KEY=<your_key>`
 
-$ python -m gpyt
-```
+3) `$ gpyt`
 
-### Desired Features
+### Keybindings
+
+* `ctrl-b` -> Toggle Dark/Light Mode
+* `ctrl-n` -> Open Past Conversations Sidebar
+* `ctrl-c` -> Quit
+
+
+### TODO
 
 - [ ] `copy` to copy GPT's response to clipboard
 - [ ] add gpt jailbreaks (DAN-esque)
-- [ ] `new` to start a new chat (clear all history and console window)
 - [ ] add special flags like -t (terse) or -v (verbose) or -d (detailed) or -i
 - [ ] (informal) or -f (for file input) or --dan (for jailbreak)
 - [ ] model select CLI
 - [ ] add API_KEY from CLI
-- [ ] add special error handling for RateLimiting or early stops to generation of text stream
 - [ ] gpt4free integration (for 3.5 and 4)
-- [ ] live upate past convo view (ctrl+s show instantly)
-
-### Completed Features
-
-- [x] loading wheel
-- [x] textual !!!
-- [x] scrolling text (adjustable speed, or disable all together)
-- [x] use streams api?
-- [x] store chat logs somewhere.
-- [x] load saved conversations
+- [ ] refactor the f**k out of `app.py`
