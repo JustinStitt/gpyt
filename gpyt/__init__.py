@@ -1,4 +1,3 @@
-import argparse
 import os
 
 from dotenv import find_dotenv, get_key
@@ -41,36 +40,16 @@ For example, if the user is asking about football use this format
 """
 
 SUMMARY_PROMPT = "Summarize the user's input in 6 words or less. Try to capture the big idea. DO NOT USE more than 6 words and DO NOT answer their question. Simply echo back to them your summary."
+API_ERROR_FALLBACK = [
+    {
+        "choices": [
+            {"delta": {"content": "There was an error with OpenAI, try again later."}}
+        ]
+    }
+]
+
 
 INTRO = "Ask me anything. I'll try to assist you!"
 
 AVAILABLE_MODELS = ("gpt-3.5-turbo", "gpt4")
 MODEL = "gpt-3.5-turbo"
-
-arg_parser = argparse.ArgumentParser(
-    prog="gpyt", description="Infer with GPT on the command line!"
-)
-
-arg_parser.add_argument(
-    "--no-memory",
-    action="store_true",
-    required=False,
-    default=False,
-    help="Disable assistant memory during conversation. (saves tokens, $$$)",
-)
-
-arg_parser.add_argument(
-    "--debug",
-    action="store_true",
-    required=False,
-    default=False,
-    help="Enable debug mode (for development).",
-)
-
-
-ARGS = arg_parser.parse_args()
-
-DEBUG = ARGS.debug
-
-if DEBUG:
-    print(f"🔧: {ENV_PATH=}")

@@ -19,7 +19,7 @@ from textual.widgets import (
     Static,
 )
 
-from gpyt import API_KEY, ARGS, INTRO, MODEL, PROMPT
+from gpyt import API_KEY, INTRO, MODEL, PROMPT
 
 from .assistant import Assistant
 from .conversation import Conversation, Message
@@ -348,7 +348,10 @@ class AssistantApp(App):
         user_message = Message(id=get_id(), role="user", content=user_input)
         self.active_conversation.log.append(user_message)
 
-        assistant_response_stream = self.assistant.get_response_stream(user_input)
+        try:
+            assistant_response_stream = self.assistant.get_response_stream(user_input)
+        except:
+            assistant_response_stream = self.assistant.error_fallback_message
 
         app.call_from_thread(
             self.assistant_responses.add_response,

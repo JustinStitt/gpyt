@@ -1,6 +1,8 @@
-import openai
 from typing import Generator
-from gpyt import SUMMARY_PROMPT
+
+import openai
+
+from gpyt import API_ERROR_FALLBACK, SUMMARY_PROMPT
 
 
 class Assistant:
@@ -28,6 +30,7 @@ class Assistant:
         self.messages = [
             {"role": "system", "content": self.prompt},
         ]
+        self.error_fallback_message = API_ERROR_FALLBACK
         openai.api_key = self.api_key
 
     def set_history(self, new_history: list):
