@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gpyt"
-version = "0.2.6"
+version = "0.2.7"
 description = "GPT on the command line."
 authors = ["Justin Stitt <jstitt007@gmail.com>"]
 readme = "README.md"
