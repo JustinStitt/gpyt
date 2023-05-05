@@ -195,7 +195,9 @@ class AssistantResponses(Static):
             )
 
         app.assistant.set_history(new_history)
-        app.action_toggle_sidebar()
+        # app.action_toggle_sidebar()
+        app.past_conversations.add_class("hidden")
+        app.focus_user_input()
 
     @work()
     def add_response(self, stream: Generator, message: Message) -> None:
