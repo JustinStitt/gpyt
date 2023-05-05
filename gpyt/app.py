@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 from typing import Callable, Generator
+from rich.style import Style
 
 from textual import work
 from textual.app import App, ComposeResult
@@ -38,14 +39,16 @@ class UserInput(Container):
     def __init__(self):
         super().__init__()
         self.keyword_mappings: dict[str, Callable] = {
-            "save": app.save_active_conversation_to_disk,
+            # "save": app.save_active_conversation_to_disk,
             "new": app.start_new_conversation,
             "clear": app.start_new_conversation,
         }
 
     def compose(self) -> ComposeResult:
         yield Label(f"🤖: {INTRO}", id="help-text")
-        yield Input(placeholder="How far away is the Sun?", id="user-input")
+        self.inp = Input(placeholder="How far away is the Sun?", id="user-input")
+        self.inp.focus()
+        yield self.inp
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         user_input = event.input.value
@@ -87,7 +90,14 @@ class ConversationOption(ListItem):
 
 class StartNewConversationOption(ListItem):
     def compose(self) -> ComposeResult:
-        yield Label("Start a new conversation")
+        yield Label("<-- Start a new conversation -->", id="new-convo-option")
+
+    def watch_highlighted(self, value: bool) -> None:
+        super().watch_highlighted(value)
+        if value:
+            self.add_class("highlighted")
+        else:
+            self.remove_class("highlighted")
 
     def select(self) -> None:
         app.start_new_conversation()
@@ -161,13 +171,16 @@ class AssistantResponses(Static):
         app._set_summary_title_id(conversation.summary, conversation.id)
         new_history = []
 
-        for i in range(0, len(conversation.log) - 1, 2):
-            user_message = conversation.log[i]
+        all_user_messages = [m for m in conversation.log if m.role == "user"]
+        all_assistant_messages = [m for m in conversation.log if m.role == "assistant"]
+
+        for user_message, assistant_response in zip(
+            all_user_messages, all_assistant_messages
+        ):
             assert (
                 user_message.role == "user"
             ), "Improper role for setup from presaved convesation"
 
-            assistant_response = conversation.log[i + 1]
             new_response = AssistantResponse(
                 question=user_message.content, id=user_message.id
             )
@@ -182,6 +195,8 @@ class AssistantResponses(Static):
             )
 
         app.assistant.set_history(new_history)
+        app.action_toggle_sidebar()
+        app.focus_user_input()
 
     @work()
     def add_response(self, stream: Generator, message: Message) -> None:
@@ -211,6 +226,8 @@ class AssistantResponses(Static):
         assert app.active_conversation, "No active conversation during log write"
         app.active_conversation.log.append(assistant_message)
 
+        app.call_from_thread(app.save_active_conversation_to_disk)
+
 
 class AssistantApp(App):
     """Base app for all user->assistant interactions"""
@@ -218,7 +235,6 @@ class AssistantApp(App):
     BINDINGS = [
         ("ctrl+b", "toggle_dark", "Toggle Dark Mode"),
         ("ctrl+n", "toggle_sidebar", "Past Conversations"),
-        ("ctrl+s", "save_conversation", "Save Conversation"),
     ]
 
     CSS_PATH = "styles.cssx"
@@ -228,6 +244,7 @@ class AssistantApp(App):
         self.assistant = assistant
         self.conversations: list[Conversation] = []
         self.active_conversation: Conversation | None = None
+        self._convo_ids_added: set[str] = set()
 
     def compose(self) -> ComposeResult:
         header = Header(show_clock=True)
@@ -261,9 +278,6 @@ class AssistantApp(App):
             "conversations",
         )
 
-    def action_save_conversation(self) -> None:
-        self.save_active_conversation_to_disk()
-
     def load_saved_conversations(self) -> None:
         """Load conversations from saved conversation path"""
         conversations_path = self.get_saved_conversations_path()
@@ -277,6 +291,7 @@ class AssistantApp(App):
                 raw_json = json.load(fd)
                 conversation = Conversation.parse_obj(raw_json)
                 self.conversations.append(conversation)
+                self._convo_ids_added.add(conversation.id)
                 self.past_conversations.add_conversation_option(conversation)
 
     def save_active_conversation_to_disk(self) -> str:
@@ -295,6 +310,7 @@ class AssistantApp(App):
                 self.active_conversation
             ), "When not supplied a conversation to save to disk, there must be an active conversation!"
             conversation = self.active_conversation
+        print("SAVING: ", conversation.id)
 
         conversations_path = self.get_saved_conversations_path()
 
@@ -303,6 +319,8 @@ class AssistantApp(App):
         path = Path(conversations_path, f"convo-{conversation.id}.json")
         with open(path, "w") as fd:
             json.dump(conversation.dict(), fd)
+
+        self._add_active_as_option()
 
         return str(path)
 
@@ -323,21 +341,31 @@ class AssistantApp(App):
         self.mount(self.assistant_responses)
         self.assistant_responses.border_title = "Conversation History"
 
-    def start_new_conversation(self, save_current: bool = True) -> None:
-        """Save current conversation, clear it, start a new fresh one"""
+    def _add_active_as_option(self) -> None:
         if not self.active_conversation:
             return
-
-        self.save_active_conversation_to_disk()
-        self.clear_active_conversation()
         exists_already = Path(
             self.get_saved_conversations_path(),
             f"convo-{self.active_conversation.id}.json",
         ).exists()
 
-        if save_current and not exists_already:
+        if exists_already and self.active_conversation.id not in self._convo_ids_added:
             self.past_conversations.add_conversation_option(self.active_conversation)
+
+        self._convo_ids_added.add(self.active_conversation.id)
+
+    def start_new_conversation(self, add_option: bool = True) -> None:
+        """Save current conversation, clear it, start a new fresh one"""
+        if not self.active_conversation:
+            return
+
+        self.save_active_conversation_to_disk()
+        if add_option:
+            self._add_active_as_option()
+        self.clear_active_conversation()
         self.active_conversation = None
+        self.action_toggle_sidebar()
+        self.focus_user_input()
 
     @work()
     def fetch_assistant_response(self, user_input: str) -> None:
@@ -360,8 +388,9 @@ class AssistantApp(App):
         )
 
     def on_select_previous_conversation(self, conversation: Conversation) -> None:
-        self.start_new_conversation(save_current=False)
+        self.start_new_conversation(add_option=False)
         self.assistant_responses.setup_from_presaved_conversation(conversation)
+        self.assistant_responses.container.scroll_end(duration=2.0, easing="in_quart")
 
     def action_toggle_dark(self) -> None:
         self.dark = not self.dark
@@ -381,6 +410,10 @@ class AssistantApp(App):
         self.past_conversations.add_class("opened-gt-once")
         self.past_conversations.toggle_class("hidden")
         self.set_focus(self.past_conversations.options)
+
+    def focus_user_input(self) -> None:
+        inp = self.query_one("#user-input")
+        inp.focus()
 
 
 class gpyt(AssistantApp):

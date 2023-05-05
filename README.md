@@ -32,7 +32,7 @@ $ python -m gpyt
 - [ ] add API_KEY from CLI
 - [ ] add special error handling for RateLimiting or early stops to generation of text stream
 - [ ] gpt4free integration (for 3.5 and 4)
-
+- [ ] live upate past convo view (ctrl+s show instantly)
 
 ### Completed Features
 

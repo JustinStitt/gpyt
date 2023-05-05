@@ -1,6 +1,3 @@
-* {
-  transition: color 1000ms in_quint;
-}
 
 Screen {
   overflow: hidden;
@@ -73,4 +70,14 @@ PastConversations:focus-within {
 
 PastConversations.hidden {
   offset-x: -100%;
+}
+
+StartNewConversationOption {
+  text-style: italic;
+  color: $primary-lighten-3;
+  align: center middle;
+}
+
+StartNewConversationOption.highlighted {
+  color: $secondary;
 }
