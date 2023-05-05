@@ -81,7 +81,8 @@ class ConversationOption(ListItem):
         return summary
 
     def select(self) -> None:
-        app.assistant_responses.setup_from_presaved_conversation(self.conversation)
+        # app.assistant_responses.setup_from_presaved_conversation(self.conversation)
+        app.on_select_previous_conversation(self.conversation)
 
 
 class StartNewConversationOption(ListItem):
@@ -103,6 +104,12 @@ class VimLikeListView(ListView):
         ), "Invalid selection type"
 
         selected.select()
+
+    def on_focus(self, event) -> None:
+        if app.past_conversations.has_class("hidden"):
+            user_input = app.query_one("#user-input")
+            app.set_focus(user_input)
+            print("FOCUSED", event)
 
 
 class PastConversations(Container):
@@ -141,14 +148,15 @@ class AssistantResponse(Static):
 class AssistantResponses(Static):
     """Container for individual AssistantResponse widgets"""
 
-    def compose(self) -> ComposeResult:
+    def __init__(self):
+        super().__init__()
         self.container = ScrollableContainer()
 
+    def compose(self) -> ComposeResult:
         yield self.container
 
     def setup_from_presaved_conversation(self, conversation: Conversation) -> None:
         """Load conversation into conversation history widget from Conversation model"""
-        # TODO: clear previous history
 
         app.active_conversation = conversation
         app._set_summary_title_id(conversation.summary, conversation.id)
@@ -310,13 +318,14 @@ class AssistantApp(App):
         self.mount(self.assistant_responses)
         self.assistant_responses.border_title = "Conversation History"
 
-    def start_new_conversation(self) -> None:
+    def start_new_conversation(self, save_current: bool = True) -> None:
         """Save current conversation, clear it, start a new fresh one"""
         if not self.active_conversation:
             return
         self.save_active_conversation_to_disk()
         self.clear_active_conversation()
-        self.past_conversations.add_conversation_option(self.active_conversation)
+        if save_current:
+            self.past_conversations.add_conversation_option(self.active_conversation)
         self.active_conversation = None
 
     @work()
@@ -336,25 +345,28 @@ class AssistantApp(App):
             stream=assistant_response_stream,
         )
 
+    def on_select_previous_conversation(self, conversation: Conversation) -> None:
+        self.start_new_conversation(save_current=False)
+        self.assistant_responses.setup_from_presaved_conversation(conversation)
+
     def action_toggle_dark(self) -> None:
         self.dark = not self.dark
 
     def action_toggle_sidebar(self) -> None:
-        past_conversations = self.query_one(PastConversations)
-        if not past_conversations.has_class("opened-gt-once"):
+        if not self.past_conversations.has_class("opened-gt-once"):
             try:
                 self.load_saved_conversations()
             except:
-                past_conversations.add_conversation_option(
+                self.past_conversations.add_conversation_option(
                     Conversation(
                         summary=f"Failed to load conversations from {self.get_saved_conversations_path()}",
                         id="-1",
                         log=[],
                     )
                 )
-        past_conversations.add_class("opened-gt-once")
-        past_conversations.toggle_class("hidden")
-        self.set_focus(past_conversations.options)
+        self.past_conversations.add_class("opened-gt-once")
+        self.past_conversations.toggle_class("hidden")
+        self.set_focus(self.past_conversations.options)
 
 
 class gpyt(AssistantApp):
