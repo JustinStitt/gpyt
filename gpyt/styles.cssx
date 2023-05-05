@@ -58,8 +58,9 @@ PastConversations {
   margin-top: 1;
   width: 40;
   height: 60%;
-  border: panel $panel-lighten-2;
-  border-title-color: rgb(225,225,225);
+  border: panel $primary-background-lighten-1;
+  border-title-color: rgb(225, 225, 225);
+  border-title-align: center;
   background: $panel;
   transition: offset 400ms in_back;
 }

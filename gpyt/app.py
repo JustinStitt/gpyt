@@ -67,7 +67,7 @@ class UserInput(Container):
 
 
 class ConversationOption(ListItem):
-    ELLIPSIFY_CUTOFF = 36
+    ELLIPSIFY_CUTOFF = 35
 
     def __init__(self, conversation: Conversation):
         super().__init__()
@@ -195,7 +195,6 @@ class AssistantResponses(Static):
             )
 
         app.assistant.set_history(new_history)
-        # app.action_toggle_sidebar()
         app.past_conversations.add_class("hidden")
         app.focus_user_input()
 
