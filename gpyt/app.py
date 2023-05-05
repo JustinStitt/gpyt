@@ -236,6 +236,8 @@ class AssistantApp(App):
         ("ctrl+b", "toggle_dark", "Toggle Dark Mode"),
         ("ctrl+n", "toggle_sidebar", "Past Conversations"),
         ("ctrl+c", "handle_exit", "Quit"),
+        ("up", "scroll_convo_up", "Scroll Up Convo"),
+        ("down", "scroll_convo_down", "Scroll Down Convo"),
     ]
 
     CSS_PATH = "styles.cssx"
@@ -421,7 +423,11 @@ class AssistantApp(App):
     def action_handle_exit(self) -> None:
         exit()
 
+    def action_scroll_convo_up(self) -> None:
+        self.assistant_responses.container.scroll_relative(y=-4)
 
+    def action_scroll_convo_down(self) -> None:
+        self.assistant_responses.container.scroll_relative(y=4)
 class gpyt(AssistantApp):
     """Used strictly for the purposes of renaming the Header widget."""
 
