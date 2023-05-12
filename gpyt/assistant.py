@@ -12,7 +12,7 @@ class Assistant:
     It can generate responses based on user input and conversation history.
     """
 
-    kDEFAULT_PROMPT_FALLTHROUGH = "User Question"
+    kDEFAULT_SUMMARY_FALLTHROUGH = "User Question"
 
     def __init__(
         self,
@@ -80,7 +80,7 @@ class Assistant:
         try:
             summary = self.get_response(initial_message)
         except:
-            return Assistant.kDEFAULT_PROMPT_FALLTHROUGH
+            return Assistant.kDEFAULT_SUMMARY_FALLTHROUGH
 
         return summary
 

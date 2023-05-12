@@ -3,14 +3,16 @@ import os
 import pyperclip
 from pathlib import Path
 from typing import Callable, Generator
+from requests import options
 from rich.style import Style
 
 from textual import work
 from textual.app import App, ComposeResult
-from textual.containers import Container, ScrollableContainer
+from textual.containers import Container, ScrollableContainer, VerticalScroll
 from textual.reactive import reactive
 from textual.widgets import (
     Button,
+    Checkbox,
     Footer,
     Header,
     Input,
@@ -19,9 +21,12 @@ from textual.widgets import (
     ListView,
     Markdown,
     Static,
+    OptionList,
 )
 
-from gpyt import API_KEY, INTRO, MODEL, PROMPT
+from gpyt import API_KEY, INTRO, MODEL, PROMPT, USE_EXPERIMENTAL_FREE_MODEL
+from gpyt import free_assistant
+from gpyt.free_assistant import FreeAssistant
 
 from .assistant import Assistant
 from .conversation import Conversation, Message
@@ -104,6 +109,22 @@ class StartNewConversationOption(ListItem):
         app.start_new_conversation()
 
 
+class OptionCheckbox(Checkbox):
+    def __init__(self, setting: str, text: str, *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        self.setting = setting
+        self._assign_default_state()
+
+    def _assign_default_state(self) -> None:
+        if hasattr(app, self.setting):
+            current_setting_state = app.__dict__[self.setting]
+            self.value = current_setting_state
+
+    def on_checkbox_changed(self) -> None:
+        if hasattr(app, self.setting):
+            app.__dict__[self.setting] = self.value
+
+
 class VimLikeListView(ListView):
     BINDINGS = [("j", "cursor_down", "Cursor Down"), ("k", "cursor_up", "Cursor Up")]
 
@@ -112,14 +133,25 @@ class VimLikeListView(ListView):
 
         assert isinstance(selected, StartNewConversationOption) or isinstance(
             selected, ConversationOption
-        ), "Invalid selection type"
+        ), f"Invalid selection type {type(selected)}"
 
         selected.select()
 
     def on_focus(self, event) -> None:
-        if app.past_conversations.has_class("hidden"):
+        if self.parent and self.parent.has_class("hidden"):
+            print("here")
             user_input = app.query_one("#user-input")
             app.set_focus(user_input)
+
+
+class Options(Container):
+    def compose(self) -> ComposeResult:
+        self.border_title = "Options"
+        self.border_subtitle = "Use Space to Toggle"
+        self.use_free = OptionCheckbox(
+            setting="use_free_gpt", text="Use Free Model (experimental)"
+        )
+        yield self.use_free
 
 
 class PastConversations(Container):
@@ -200,12 +232,13 @@ class AssistantResponses(Static):
                 {"role": "assistant", "content": assistant_response.content}
             )
 
-        app.assistant.set_history(new_history)
+        app._get_assistant().set_history(new_history)
         app.past_conversations.add_class("hidden")
         app.focus_user_input()
 
     @work()
     def add_response(self, stream: Generator, message: Message) -> None:
+        print("adding response")
         new_response = AssistantResponse(question=message.content, id=message.id)
         app.call_from_thread(self.container.mount, new_response)
         app.call_from_thread(new_response.scroll_visible)
@@ -213,13 +246,18 @@ class AssistantResponses(Static):
         update_frequency = 10
         i = 0
         for data in stream:
+            print(data, end="", flush=True)
             i += 1
             try:  # HACK: should check for attr, not try/except
-                markdown = markdown + data["choices"][0]["delta"]["content"]
+                if app.use_free_gpt:
+                    markdown = markdown + data
+                else:
+                    markdown = markdown + data["choices"][0]["delta"]["content"]
                 if i % update_frequency == 0:
                     app.call_from_thread(new_response.update_response, markdown)
                     app.call_from_thread(self.container.scroll_end)
             except:
+                print("hit exception")
                 continue
 
         app.call_from_thread(new_response.update_response, markdown)
@@ -227,7 +265,7 @@ class AssistantResponses(Static):
         app.call_from_thread(
             new_response.user_question.scroll_visible, duration=2, easing="out_back"
         )
-        app.assistant.log_assistant_response(markdown)
+        app._get_assistant().log_assistant_response(markdown)
         assistant_message = Message(id=get_id(), role="assistant", content=markdown)
         assert app.active_conversation, "No active conversation during log write"
         app.active_conversation.log.append(assistant_message)
@@ -244,16 +282,22 @@ class AssistantApp(App):
         ("ctrl+c", "handle_exit", "Quit"),
         ("up", "scroll_convo_up", "Scroll Up Convo"),
         ("down", "scroll_convo_down", "Scroll Down Convo"),
+        ("ctrl+o", "toggle_settings", "Settings"),
     ]
 
     CSS_PATH = "styles.cssx"
 
-    def __init__(self, assistant: Assistant):
+    def __init__(self, assistant: Assistant, free_assistant: FreeAssistant):
         super().__init__()
         self.assistant = assistant
+        self._free_assistant = free_assistant
         self.conversations: list[Conversation] = []
         self.active_conversation: Conversation | None = None
         self._convo_ids_added: set[str] = set()
+        self.use_free_gpt = USE_EXPERIMENTAL_FREE_MODEL
+
+    def _get_assistant(self) -> Assistant | FreeAssistant:
+        return self.assistant if not self.use_free_gpt else self._free_assistant
 
     def compose(self) -> ComposeResult:
         header = Header(show_clock=True)
@@ -269,7 +313,9 @@ class AssistantApp(App):
         yield self.assistant_responses
         self.past_conversations = PastConversations(classes="hidden")
         self.past_conversations.border_title = "Past Conversations"
+        self.past_conversations.border_subtitle = "Press Enter to Select"
         yield self.past_conversations
+        yield Options(classes="hidden")
 
     def get_saved_conversations_path(self) -> Path:
         """Return the path where conversations are to be saved/loaded from"""
@@ -338,7 +384,7 @@ class AssistantApp(App):
         self.assistant_responses.border_subtitle = f"convo-id: 0x{id}"
 
     def _setup_fresh_convo(self, initial_user_input: str) -> None:
-        summary = self.assistant.get_conversation_summary(initial_user_input)
+        summary = self._get_assistant().get_conversation_summary(initial_user_input)
         new_convo = Conversation(id=get_id(), summary=summary, log=[])
         self._set_summary_title_id(summary, new_convo.id)
         self.conversations.append(new_convo)
@@ -393,9 +439,11 @@ class AssistantApp(App):
         self.active_conversation.log.append(user_message)
 
         try:
-            assistant_response_stream = self.assistant.get_response_stream(user_input)
+            assistant_response_stream = self._get_assistant().get_response_stream(
+                user_input
+            )
         except:
-            assistant_response_stream = self.assistant.error_fallback_message
+            assistant_response_stream = self._get_assistant().error_fallback_message
 
         app.call_from_thread(
             self.assistant_responses.add_response,
@@ -430,6 +478,14 @@ class AssistantApp(App):
             return
         self.set_focus(self.past_conversations.options)
 
+    def action_toggle_settings(self) -> None:
+        options = self.query_one(Options)
+        options.toggle_class("hidden")
+        if options.has_class("hidden"):
+            app.focus_user_input()
+            return
+        self.set_focus(options.use_free)
+
     def focus_user_input(self) -> None:
         inp = self.query_one("#user-input")
         inp.focus()
@@ -447,16 +503,14 @@ class AssistantApp(App):
 class gpyt(AssistantApp):
     """Used strictly for the purposes of renaming the Header widget."""
 
-    def __init__(self, assistant: Assistant):
-        super().__init__(assistant=assistant)
-
 
 def main():
     app.run()
 
 
 gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
-app = gpyt(assistant=gpt)
+free_gpt = FreeAssistant()
+app = gpyt(assistant=gpt, free_assistant=free_gpt)
 
 if __name__ == "__main__":
     main()

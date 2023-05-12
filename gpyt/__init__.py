@@ -1,4 +1,13 @@
 import os
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--free", help="set to True if you want to see free space", action="store_true"
+)
+args = parser.parse_args()
+
+USE_EXPERIMENTAL_FREE_MODEL = args.free
 
 from dotenv import find_dotenv, get_key
 

@@ -82,3 +82,27 @@ StartNewConversationOption {
 StartNewConversationOption.highlighted {
   color: $secondary;
 }
+
+Options {
+  layer: overlay;
+  margin-top: 1;
+  width: 35;
+  height: 17%;
+  border: panel $primary-background-lighten-1;
+  border-title-color: rgb(225, 225, 225);
+  border-title-align: center;
+  background: $panel;
+  transition: offset 400ms in_back;
+}
+
+Options:focus-within {
+  offset-x: 0 !important;
+}
+
+Options.hidden {
+  offset-x: -100%;
+}
+
+OptionCheckbox:focus-within {
+  background: $secondary-background-lighten-2;
+}
