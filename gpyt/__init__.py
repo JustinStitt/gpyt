@@ -1,5 +1,8 @@
 import os
 import argparse
+from dotenv import find_dotenv, get_key, load_dotenv
+
+load_dotenv()
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -7,22 +10,18 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+
 USE_EXPERIMENTAL_FREE_MODEL = args.free
 
-from dotenv import find_dotenv, get_key
 
-ENV_PATH = find_dotenv()
+# ENV_PATH = find_dotenv()
 
-API_KEY = get_key(dotenv_path=ENV_PATH, key_to_get="OPENAI_API_KEY")
-
-# try to get from os envrionment variables
-
-if API_KEY is None:
-    API_KEY = os.getenv("OPENAI_API_KEY") or None
+# API_KEY = get_key(dotenv_path=ENV_PATH, key_to_get="OPENAI_API_KEY")
+API_KEY = os.getenv("OPENAI_API_KEY", None)
 
 assert (
-    API_KEY is not None
-), """
+    API_KEY is not None and len(API_KEY)
+) or USE_EXPERIMENTAL_FREE_MODEL, """
 
 ❗Missing OpenAI API Key ❗
 
@@ -31,8 +30,18 @@ Steps to fix this issue:
     1) Get an OpenAI Key from https://platform.openai.com/account/api-keys
     2) Create a `.env` file located in your $HOME directory.
     3) add `OPENAI_API_KEY="your_api_key"` to the `.env` file.
-    4) or, you can run `$ EXPORT OPENAI_API_KEY="your_api_key"` to set a key for the active shell session.
+    4) or, you can run `$ EXPORT OPENAI_API_KEY="your_api_key"` to set a key
+    for the active shell session.
     5) rerun this program with `$ gpyt` or `$ python -m gpyt`
+
+💡 OR 💡
+
+Use the new **experimental** free model feature.
+
+$ gpyt --free
+
+💭 This may break sometimes and is often times slower. It is recommended to
+generate your own OpenAI API key (see above)
 
 """
 
@@ -68,9 +77,11 @@ API_ERROR_MESSAGE = """
 # Diagnostics
 
 Make sure that:
-    1) You have a proper OPENAI_API_KEY configured at `$HOME/.env` starting with "sk-"
-    2) You have configured Billing over at https://platform.openai.com/account/billing
-    3) You aren't getting rate limited (9000 tokens per minute)
+1) You have a proper OPENAI_API_KEY configured at `$HOME/.env` starting with 'sk-'
+
+2) You have configured Billing over at https://platform.openai.com/account/billing
+
+3) You aren't getting rate limited (9000 tokens per minute)
 
 Try Again Later.
 """

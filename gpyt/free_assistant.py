@@ -26,11 +26,12 @@ class FreeAssistant(Assistant):
     def log_assistant_response(self, final_response: str) -> None:  # pyright: ignore
         ...
 
-    def get_response(self, user_input: str) -> str:
+    def get_response(self, user_input: str, memorize=True) -> str:
         response = you.Completion.create(prompt=user_input, chat=self.chat).text
         assert response, "None response for FreeAssistant `You`"
 
-        self.chat.append({"question": user_input, "answer": response})
+        if memorize:
+            self.chat.append({"question": user_input, "answer": response})
         return response
 
     def get_conversation_summary(self, initial_message: str) -> str:
@@ -40,7 +41,7 @@ class FreeAssistant(Assistant):
 
         message = pre_prompt + initial_message
 
-        return self.get_response(message)
+        return self.get_response(message, memorize=False)
 
 
 if __name__ == "__main__":

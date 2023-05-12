@@ -12,6 +12,7 @@ UserInput {
   height: 10;
   padding: 1;
   dock: bottom;
+  border-title-color: rgb(225, 225, 225);
   border-subtitle-color: $surface-lighten-3;
 }
 

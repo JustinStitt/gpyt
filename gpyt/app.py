@@ -25,7 +25,6 @@ from textual.widgets import (
 )
 
 from gpyt import API_KEY, INTRO, MODEL, PROMPT, USE_EXPERIMENTAL_FREE_MODEL
-from gpyt import free_assistant
 from gpyt.free_assistant import FreeAssistant
 
 from .assistant import Assistant
@@ -123,6 +122,8 @@ class OptionCheckbox(Checkbox):
     def on_checkbox_changed(self) -> None:
         if hasattr(app, self.setting):
             app.__dict__[self.setting] = self.value
+            if self.setting == "use_free_gpt":
+                app.user_input.border_title = "🌐 Internet Enabled" if self.value else ""
 
 
 class VimLikeListView(ListView):
@@ -307,9 +308,9 @@ class AssistantApp(App):
         self.assistant_responses = AssistantResponses()
         self.assistant_responses.border_title = "Conversation History"
 
-        user_input = UserInput()
-        user_input.border_subtitle = "Press Enter To Submit"
-        yield user_input
+        self.user_input = UserInput()
+        self.user_input.border_subtitle = "Press Enter To Submit"
+        yield self.user_input
         yield self.assistant_responses
         self.past_conversations = PastConversations(classes="hidden")
         self.past_conversations.border_title = "Past Conversations"
