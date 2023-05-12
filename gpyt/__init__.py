@@ -1,22 +1,23 @@
 import os
 import argparse
-from dotenv import find_dotenv, get_key, load_dotenv
+from dotenv import dotenv_values
 
-load_dotenv()
+# check for environment variable first
+API_KEY = os.getenv("OPENAI_API_KEY")
+DOTENV_PATH = os.path.expanduser("~/.env")
+
+if API_KEY is None or (isinstance(API_KEY, str) and not len(API_KEY)):
+    result = dotenv_values(DOTENV_PATH)
+    API_KEY = result.get("OPENAI_API_KEY", None)
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--free", help="set to True if you want to see free space", action="store_true"
+    "--free", help="Use the gpt4free model. (experimental)", action="store_true"
 )
 args = parser.parse_args()
 
 USE_EXPERIMENTAL_FREE_MODEL = args.free
 
-
-# ENV_PATH = find_dotenv()
-
-# API_KEY = get_key(dotenv_path=ENV_PATH, key_to_get="OPENAI_API_KEY")
-API_KEY = os.getenv("OPENAI_API_KEY", None)
 
 assert (
     API_KEY is not None and len(API_KEY)
