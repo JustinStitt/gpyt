@@ -345,12 +345,20 @@ class AssistantApp(App):
         self.active_conversation = new_convo
 
     def clear_active_conversation(self) -> None:
+        """
+        Clears the active conversation by removing all messages from the
+        current conversation history and resetting it.
+        """
         self.assistant_responses.remove()
         self.assistant_responses = AssistantResponses()
         self.mount(self.assistant_responses)
         self.assistant_responses.border_title = "Conversation History"
 
     def _add_active_as_option(self) -> None:
+        """
+        Adds the active conversation as an option to the list of past
+        conversations, if it does not already exist.
+        """
         if not self.active_conversation:
             return
         exists_already = Path(
