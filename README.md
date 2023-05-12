@@ -1,15 +1,24 @@
 # gpyt
 
-> GPT in your terminal.
+GPT in your terminal.
 
->> WIP
+> **Note**
+> WIP
 
+
+Try out the new (experimental and buggy) **FREE** model:
+
+`$ gpyt --free`
+
+^ NO API KEY required
 
 ## Demo
 
 ![gpyt demo](https://github.com/JustinStitt/gpyt/blob/master/media/gpyt-show-1.gif?raw=true)
 
 Uses [Textual](https://textual.textualize.io).
+
+
 
 
 ### Installation & Usage
