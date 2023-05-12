@@ -1,12 +1,17 @@
 # gpyt
 
-GPT in your terminal.
+### GPT in your terminal.
+
 
 > **Note**
 > WIP
 
+<img src="https://img.shields.io/badge/dynamic/json.svg?label=downloads&url=https%3A%2F%2Fpypistats.org%2Fapi%2Fpackages%2Fgpyt%2Frecent&query=data.last_month&colorB=brightgreen&suffix=%2FMonth"/>
+<img src="https://img.shields.io/pypi/v/gpyt.svg"/>
 
-Try out the new (experimental and buggy) **FREE** model:
+---
+
+Try out the new (experimental and buggy) **FREE** model using [GPT4Free](https://github.com/xtekky/gpt4free):
 
 `$ gpyt --free`
 
@@ -27,6 +32,10 @@ Uses [Textual](https://textual.textualize.io).
 2) add `OPENAI_API_KEY="<your_openai_api_key>"` in a `.env` at $HOME or `export OPENAI_API_KEY=<your_key>`
 
 3) `$ gpyt`
+
+Or try this *optional* method for running **gpyt** if you don't have an api key:
+
+4) `$ gpyt --free`
 
 ### Keybindings
 
