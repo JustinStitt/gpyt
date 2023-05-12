@@ -42,6 +42,7 @@ Or try this *optional* method for running **gpyt** if you don't have an api key:
 * `ctrl-b` -> Toggle Dark/Light Mode
 * `ctrl-n` -> Open Past Conversations Sidebar
 * `ctrl-c` -> Quit
+* `ctrl-o` -> Settings Menu
 
 
 ### TODO
@@ -52,6 +53,6 @@ Or try this *optional* method for running **gpyt** if you don't have an api key:
 - [ ] (informal) or -f (for file input) or --dan (for jailbreak)
 - [ ] model select CLI
 - [ ] add API_KEY from CLI
-- [ ] gpt4free integration (for 3.5 and 4)
+- [ ] gpt4free integration (~~for 3.5~~ and 4)
 - [ ] refactor the f**k out of `app.py`
 - [ ] copy/pasting with mouse

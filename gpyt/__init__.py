@@ -10,7 +10,6 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
-
 USE_EXPERIMENTAL_FREE_MODEL = args.free
 
 
@@ -90,5 +89,5 @@ API_ERROR_FALLBACK = [{"choices": [{"delta": {"content": API_ERROR_MESSAGE}}]}]
 
 INTRO = "Ask me anything. I'll try to assist you!"
 
-AVAILABLE_MODELS = ("gpt-3.5-turbo", "gpt4")
+AVAILABLE_MODELS = ["gpt-3.5-turbo"]
 MODEL = "gpt-3.5-turbo"
