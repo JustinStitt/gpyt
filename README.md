@@ -17,13 +17,17 @@ Try out the new (experimental and buggy) **FREE** model using [GPT4Free](https:/
 
 ^ NO API KEY required
 
+Uses [Textual](https://textual.textualize.io).
+
 ## Demo
 
 ![gpyt demo](https://github.com/JustinStitt/gpyt/blob/master/media/gpyt-show-1.gif?raw=true)
 
-Uses [Textual](https://textual.textualize.io).
 
 
+### Markdown Support
+
+![markdown support](https://github.com/JustinStitt/gpyt/blob/master/media/md-support.png?raw=true)
 
 
 ### Installation & Usage
