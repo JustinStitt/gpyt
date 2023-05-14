@@ -29,6 +29,8 @@ Uses [Textual](https://textual.textualize.io).
 
 ![markdown support](https://github.com/JustinStitt/gpyt/blob/master/media/md-support.png?raw=true)
 
+![markdown support (showing table)](https://github.com/JustinStitt/gpyt/blob/master/media/md-support-2.png?raw=true)
+
 
 ### Installation & Usage
 1) `$ pip install gpyt`
