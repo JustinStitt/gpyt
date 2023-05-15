@@ -14,12 +14,14 @@ Make sure that:
 
 Try Again Later.
 """
+
 API_ERROR_FALLBACK = [{"choices": [{"delta": {"content": API_ERROR_MESSAGE}}]}]
 
 
 INTRO = "Ask me anything. I'll try to assist you!"
 
 AVAILABLE_MODELS = ["gpt-3.5-turbo"]
+
 MODEL = "gpt-3.5-turbo"
 
 PROMPT = """
