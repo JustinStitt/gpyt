@@ -2,7 +2,6 @@ import os
 
 from dotenv import dotenv_values
 
-from gpyt.components.assistant_app import AssistantApp
 from gpyt.free_assistant import FreeAssistant
 
 from .app import gpyt
