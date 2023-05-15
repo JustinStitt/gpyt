@@ -1,6 +1,7 @@
-from .app import main
+from gpyt import app
 
 try:
-    main()
+    app.run()
+
 except KeyboardInterrupt:
     print("\n🔧 KeyboardInterrupt detected, cleaning up and quitting.")

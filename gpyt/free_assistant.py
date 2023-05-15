@@ -1,9 +1,8 @@
-from queue import Queue
 from typing import Generator
 
 from gpt4free import you
 
-from gpyt import API_ERROR_FALLBACK
+from .config import API_ERROR_FALLBACK
 
 from .assistant import Assistant
 

@@ -2,7 +2,7 @@ from typing import Generator
 
 import openai
 
-from gpyt import API_ERROR_FALLBACK, SUMMARY_PROMPT
+from .config import API_ERROR_FALLBACK, SUMMARY_PROMPT
 
 
 class Assistant:
