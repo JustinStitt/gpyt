@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gpyt"
-version = "0.2.15"
+version = "0.2.16"
 description = "GPT on the command line."
 authors = ["Justin Stitt <jstitt007@gmail.com>"]
 readme = "README.md"
@@ -22,4 +22,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-gpyt = 'gpyt.app:main'
+gpyt = 'gpyt.__main__:main'
