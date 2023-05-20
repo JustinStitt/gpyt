@@ -36,11 +36,4 @@ class Options(RadioSet):
 
         if hasattr(self._app, option):
             self._app.__dict__[option] = True
-            model = "GPT 3.5"
-
-            if option == "use_free_gpt":
-                model = "GPT3.5 Free 🆓"
-            elif option == "use_palm":
-                model = "PaLM 2 🌴"
-
-            self._app.user_input.border_title = f"Model: {model}"
+            self._app.adjust_model_border_title()

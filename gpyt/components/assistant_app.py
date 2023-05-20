@@ -56,6 +56,16 @@ class AssistantApp(App):
 
         return self.assistant
 
+    def adjust_model_border_title(self) -> None:
+        model = "GPT 3.5"
+
+        if self.use_free_gpt:
+            model = "GPT3.5 Free 🆓"
+        elif self.use_palm:
+            model = "PaLM 2 🌴"
+
+        self.user_input.border_title = f"Model: {model}"
+
     def compose(self) -> ComposeResult:
         header = Header(show_clock=True)
         header.tall = False
@@ -71,6 +81,7 @@ class AssistantApp(App):
         self.past_conversations = PastConversations(classes="hidden", app=self)
         self.past_conversations.border_title = "Past Conversations"
         self.past_conversations.border_subtitle = "Press Enter to Select"
+        self.adjust_model_border_title()
         yield self.past_conversations
         yield Options(classes="hidden", app=self)
 
