@@ -17,6 +17,10 @@ Try out the new (experimental and buggy) **FREE** model using [GPT4Free](https:/
 
 ^ NO API KEY required
 
+OR Try out PaLM 2 (requires Google MakerSuite API KEY)
+
+`$gpyt --palm`
+
 Uses [Textual](https://textual.textualize.io).
 
 ## Demo
@@ -48,7 +52,7 @@ Or try this *optional* method for running **gpyt** if you don't have an api key:
 * `ctrl-b` -> Toggle Dark/Light Mode
 * `ctrl-n` -> Open Past Conversations Sidebar
 * `ctrl-c` -> Quit
-* `ctrl-o` -> Settings Menu
+* `ctrl-o` -> Model Selection Menu
 
 
 ### TODO
