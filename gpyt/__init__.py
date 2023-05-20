@@ -1,22 +1,24 @@
 import os
 
-from dotenv import dotenv_values
+from dotenv import dotenv_values, load_dotenv
 
 from gpyt.free_assistant import FreeAssistant
+from gpyt.palm_assistant import PalmAssistant
 
 from .app import gpyt
 from .args import USE_EXPERIMENTAL_FREE_MODEL
 from .assistant import Assistant
 from .config import MODEL, PROMPT
 
-
 # check for environment variable first
 API_KEY = os.getenv("OPENAI_API_KEY")
+PALM_API_KEY = os.getenv("PALM_API_KEY")
 DOTENV_PATH = os.path.expanduser("~/.env")
 
 if API_KEY is None or (isinstance(API_KEY, str) and not len(API_KEY)):
     result = dotenv_values(DOTENV_PATH)
     API_KEY = result.get("OPENAI_API_KEY", None)
+    PALM_API_KEY = result.get("PALM_API_KEY", None)
 
 
 assert (
@@ -48,4 +50,5 @@ generate your own OpenAI API key (see above)
 
 gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
 free_gpt = FreeAssistant()
-app = gpyt(assistant=gpt, free_assistant=free_gpt)
+palm = PalmAssistant(api_key=PALM_API_KEY)
+app = gpyt(assistant=gpt, free_assistant=free_gpt, palm=palm)

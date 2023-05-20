@@ -1,4 +1,7 @@
-SUMMARY_PROMPT = "Summarize the user's input in 6 words or less. Try to capture the big idea. DO NOT USE more than 6 words and DO NOT answer their question. Simply echo back to them your summary."
+SUMMARY_PROMPT = """Summarize the following question in 6 words or less. be
+concise and fully grasp the main idea of the question. If what follows
+is not a question just summarize the idea of the statement itself\n"""
+
 
 API_ERROR_MESSAGE = """
 ❗ There was an error with OpenAI.

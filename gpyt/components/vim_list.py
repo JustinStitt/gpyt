@@ -16,6 +16,5 @@ class VimLikeListView(ListView):
 
     def on_focus(self, _) -> None:
         if self.parent and self.parent.has_class("hidden"):
-            print("here")
             user_input = self.app.query_one("#user-input")
             self.app.set_focus(user_input)

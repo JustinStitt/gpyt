@@ -8,7 +8,8 @@ from textual.widgets import Footer, Header
 
 
 from gpyt.free_assistant import FreeAssistant
-from ..args import USE_EXPERIMENTAL_FREE_MODEL
+from gpyt.palm_assistant import PalmAssistant
+from ..args import USE_EXPERIMENTAL_FREE_MODEL, USE_PALM_MODEL
 from ..assistant import Assistant
 from ..conversation import Conversation, Message
 from ..id import get_id
@@ -33,17 +34,27 @@ class AssistantApp(App):
 
     CSS_PATH = "styles.cssx"
 
-    def __init__(self, assistant: Assistant, free_assistant: FreeAssistant):
+    def __init__(
+        self, assistant: Assistant, free_assistant: FreeAssistant, palm: PalmAssistant
+    ):
         super().__init__()
         self.assistant = assistant
         self._free_assistant = free_assistant
+        self._palm = palm
         self.conversations: list[Conversation] = []
         self.active_conversation: Conversation | None = None
         self._convo_ids_added: set[str] = set()
         self.use_free_gpt = USE_EXPERIMENTAL_FREE_MODEL
+        self.use_palm = USE_PALM_MODEL
+        self.use_default_model = not (self.use_free_gpt or self.use_palm)
 
-    def _get_assistant(self) -> Assistant | FreeAssistant:
-        return self.assistant if not self.use_free_gpt else self._free_assistant
+    def _get_assistant(self) -> Assistant | FreeAssistant | PalmAssistant:
+        if self.use_palm:
+            return self._palm
+        if self.use_free_gpt:
+            return self._free_assistant
+
+        return self.assistant
 
     def compose(self) -> ComposeResult:
         header = Header(show_clock=True)
@@ -111,7 +122,6 @@ class AssistantApp(App):
                 self.active_conversation
             ), "When not supplied a conversation to save to disk, there must be an active conversation!"
             conversation = self.active_conversation
-        print("SAVING: ", conversation.id)
 
         conversations_path = self.get_saved_conversations_path()
 
@@ -230,7 +240,7 @@ class AssistantApp(App):
         if options.has_class("hidden"):
             self.focus_user_input()
             return
-        self.set_focus(options.use_free)
+        self.set_focus(options)
 
     def focus_user_input(self) -> None:
         inp = self.query_one("#user-input")

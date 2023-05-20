@@ -56,7 +56,6 @@ class AssistantResponses(Static):
 
     @work()
     def add_response(self, stream: Generator, message: Message) -> None:
-        print("adding response")
         new_response = AssistantResponse(question=message.content, id=message.id)
         self._app.call_from_thread(self.container.mount, new_response)
         self._app.call_from_thread(new_response.scroll_visible)
@@ -64,10 +63,9 @@ class AssistantResponses(Static):
         update_frequency = 10
         i = 0
         for data in stream:
-            print(data, end="", flush=True)
             i += 1
             try:  # HACK: should check for attr, not try/except
-                if self._app.use_free_gpt:
+                if self._app.use_free_gpt or self._app.use_palm:
                     markdown = markdown + data
                 else:
                     markdown = markdown + data["choices"][0]["delta"]["content"]
@@ -75,7 +73,6 @@ class AssistantResponses(Static):
                     self._app.call_from_thread(new_response.update_response, markdown)
                     self._app.call_from_thread(self.container.scroll_end)
             except:
-                print("hit exception")
                 continue
 
         self._app.call_from_thread(new_response.update_response, markdown)
