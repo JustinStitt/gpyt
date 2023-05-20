@@ -19,7 +19,7 @@ Try out the new (experimental and buggy) **FREE** model using [GPT4Free](https:/
 
 OR Try out PaLM 2 (requires Google MakerSuite API KEY)
 
-`$gpyt --palm`
+`$ gpyt --palm`
 
 Uses [Textual](https://textual.textualize.io).
 
@@ -46,6 +46,11 @@ Uses [Textual](https://textual.textualize.io).
 Or try this *optional* method for running **gpyt** if you don't have an api key:
 
 4) `$ gpyt --free`
+
+Or try this *optional* method for running **PaLM 2**, Google's premier LLM:
+
+5) `$ gpyt --palm`
+     - Be sure to set an api key at `~/.env` with the field `PALM_API_KEY`
 
 ### Keybindings
 
