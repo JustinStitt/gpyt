@@ -1,7 +1,7 @@
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import ScrollableContainer
-from textual.widgets import Static
+from textual.widgets import LoadingIndicator, Static
 from typing import Generator
 
 from ..conversation import Conversation, Message
@@ -76,7 +76,6 @@ class AssistantResponses(Static):
                 continue
 
         self._app.call_from_thread(new_response.update_response, markdown)
-        # app.call_from_thread(self.container.scroll_page_up)
         self._app.call_from_thread(
             new_response.user_question.scroll_visible, duration=2, easing="out_back"
         )
@@ -86,3 +85,8 @@ class AssistantResponses(Static):
         self._app.active_conversation.log.append(assistant_message)
 
         self._app.call_from_thread(self._app.save_active_conversation_to_disk)
+
+        loading_indicator = self.query_one(LoadingIndicator)
+        if loading_indicator:
+            self._app.call_from_thread(loading_indicator.remove)
+            print("deleting loading indicator")

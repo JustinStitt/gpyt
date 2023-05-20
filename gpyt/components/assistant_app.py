@@ -4,7 +4,7 @@ from pathlib import Path
 
 from textual import work
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header
+from textual.widgets import Footer, Header, LoadingIndicator
 
 
 from gpyt.free_assistant import FreeAssistant
@@ -211,6 +211,8 @@ class AssistantApp(App):
             )
         except:
             assistant_response_stream = self._get_assistant().error_fallback_message
+
+        self.app.call_from_thread(self.assistant_responses.mount, LoadingIndicator())
 
         self.app.call_from_thread(
             self.assistant_responses.add_response,

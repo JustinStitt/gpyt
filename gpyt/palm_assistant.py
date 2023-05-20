@@ -14,6 +14,7 @@ class PalmAssistant(Assistant):
         ("Write a for loop in C#", "C# For Loop"),
         ("Hello!", "Greeting"),
     ]
+
     SUMMARY_PROMPT = """Summarize the following question in 6 words or less. be
         concise and fully grasp the main idea of the question. If what follows
         is not a question just summarize the idea of the statement itself
@@ -25,15 +26,18 @@ class PalmAssistant(Assistant):
         summary C# For Loops.
         input: How do I bake a cake?
         summary Baking a Cake.
-        """
+    """
+
+    API_ERROR_MESSAGE = """There was an ERROR with the PaLM 2 API\n## Diagnostics\n* Make sure you have a PALM_API_KEY set at `~/.env`\n* Make sure you aren't being rate-limited."""
 
     def __init__(self, api_key):
         self.error_fallback_message = API_ERROR_FALLBACK
         self.chat: list[dict[str, str]] = []
         self.api_key = api_key
-        assert self.api_key and len(self.api_key), "Missing PaLM 2 API KEY"
-        palm.configure(api_key=self.api_key)
+        if not self._bad_key():
+            palm.configure(api_key=self.api_key)
         self.messages = []
+        self.error_fallback_message = PalmAssistant.API_ERROR_MESSAGE
 
     def clear_history(self) -> None:
         """reset internal message queue"""
@@ -49,20 +53,28 @@ class PalmAssistant(Assistant):
         ...
 
     def get_response(self, user_input: str) -> str:
+        if self._bad_key():
+            return PalmAssistant.API_ERROR_MESSAGE
         self.messages.append(user_input)
         response = palm.chat(context=PROMPT, messages=self.messages).last
         self.messages.append(response)
         return response
 
+    def _bad_key(self) -> bool:
+        return not self.api_key or (type(self.api_key) is str and len(self.api_key) < 1)
+
     def get_conversation_summary(self, initial_message: str) -> str:
+        if self._bad_key():
+            return "API KEY Error"
         prompt = f"{PalmAssistant.SUMMARY_PROMPT}\ninput: {initial_message}\nsummary"
         response = palm.generate_text(prompt=prompt)
         return response.result
 
 
 if __name__ == "__main__":
-    agent = PalmAssistant()
-    print(agent.get_conversation_summary("What is the third closest moon from Saturn"))
+    ...
+    # agent = PalmAssistant()
+    # print(agent.get_conversation_summary("What is the third closest moon from Saturn"))
     # while 1:
     #     user_inp = input("> ")
     #     msg = agent.get_response(user_input=user_inp)
