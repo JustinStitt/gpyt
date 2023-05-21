@@ -12,6 +12,15 @@ class FreeAssistant(Assistant):
         self.error_fallback_message = API_ERROR_FALLBACK
         self.chat: list[dict[str, str]] = []
 
+    def set_history(self, history: list[dict[str, str]]) -> None:
+        self.clear_history()
+        for i in range(0, len(history) - 1, 2):
+            user = history[i]
+            assistant = history[i + 1]
+            self.chat.append(
+                {"question": user["content"], "answer": assistant["content"]}
+            )
+
     def clear_history(self) -> None:
         """reset internal message queue"""
         self.chat.clear()

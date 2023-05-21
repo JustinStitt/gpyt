@@ -39,9 +39,14 @@ class PalmAssistant(Assistant):
         self.messages = []
         self.error_fallback_message = PalmAssistant.API_ERROR_MESSAGE
 
+    def set_history(self, new_history: list[dict[str, str]]):
+        self.clear_history()
+        for message in new_history:
+            self.messages.append(message["content"])
+
     def clear_history(self) -> None:
         """reset internal message queue"""
-        self.chat.clear()
+        self.messages.clear()
 
     def get_response_stream(self, user_input: str) -> Generator:
         """Fake a stream output with PaLM 2"""
