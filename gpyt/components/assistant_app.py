@@ -9,7 +9,7 @@ from textual.widgets import Footer, Header, LoadingIndicator
 
 from gpyt.free_assistant import FreeAssistant
 from gpyt.palm_assistant import PalmAssistant
-from ..args import USE_EXPERIMENTAL_FREE_MODEL, USE_PALM_MODEL
+from ..args import USE_EXPERIMENTAL_FREE_MODEL, USE_PALM_MODEL, USE_GPT4
 from ..assistant import Assistant
 from ..conversation import Conversation, Message
 from ..id import get_id
@@ -35,24 +35,34 @@ class AssistantApp(App):
     CSS_PATH = "styles.cssx"
 
     def __init__(
-        self, assistant: Assistant, free_assistant: FreeAssistant, palm: PalmAssistant
+        self,
+        assistant: Assistant,
+        free_assistant: FreeAssistant,
+        palm: PalmAssistant,
+        gpt4: Assistant,
     ):
         super().__init__()
         self.assistant = assistant
         self._free_assistant = free_assistant
         self._palm = palm
+        self._gpt4 = gpt4
         self.conversations: list[Conversation] = []
         self.active_conversation: Conversation | None = None
         self._convo_ids_added: set[str] = set()
         self.use_free_gpt = USE_EXPERIMENTAL_FREE_MODEL
         self.use_palm = USE_PALM_MODEL
-        self.use_default_model = not (self.use_free_gpt or self.use_palm)
+        self.use_gpt4 = USE_GPT4
+        self.use_default_model = not (
+            self.use_free_gpt or self.use_palm or self.use_gpt4
+        )
 
     def _get_assistant(self) -> Assistant | FreeAssistant | PalmAssistant:
         if self.use_palm:
             return self._palm
         if self.use_free_gpt:
             return self._free_assistant
+        if self.use_gpt4:
+            return self._gpt4
 
         return self.assistant
 
@@ -63,6 +73,8 @@ class AssistantApp(App):
             model = "GPT3.5 Free 🆓"
         elif self.use_palm:
             model = "PaLM 2 🌴"
+        elif self.use_gpt4:
+            model = "GPT 4"
 
         self.user_input.border_title = f"Model: {model}"
 

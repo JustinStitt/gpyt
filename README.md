@@ -21,6 +21,10 @@ OR Try out PaLM 2 (requires Google MakerSuite API KEY)
 
 `$ gpyt --palm`
 
+If you have access, you can try out GPT4
+
+`$ gpyt --gpt4`
+
 Uses [Textual](https://textual.textualize.io).
 
 ## Demo

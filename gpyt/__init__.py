@@ -49,6 +49,7 @@ generate your own OpenAI API key (see above)
 
 
 gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
+gpt4 = Assistant(api_key=API_KEY or "", model="gpt-4", prompt=PROMPT)
 free_gpt = FreeAssistant()
 palm = PalmAssistant(api_key=PALM_API_KEY)
-app = gpyt(assistant=gpt, free_assistant=free_gpt, palm=palm)
+app = gpyt(assistant=gpt, free_assistant=free_gpt, palm=palm, gpt4=gpt4)

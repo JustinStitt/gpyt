@@ -15,6 +15,8 @@ Make sure that:
 
 3) You aren't getting rate limited (9000 tokens per minute)
 
+4) If trying to use GPT4, be sure you have been granted access from OpenAI
+
 Try Again Later.
 """
 
