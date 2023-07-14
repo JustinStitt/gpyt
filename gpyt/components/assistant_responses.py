@@ -59,6 +59,7 @@ class AssistantResponses(Static):
         new_response = AssistantResponse(question=message.content, id=message.id)
         self._app.call_from_thread(self.container.mount, new_response)
         self._app.call_from_thread(new_response.scroll_visible)
+        self._app.scrolled_during_response_stream = False
         markdown = ""
         update_frequency = 10
         i = 0
@@ -71,7 +72,8 @@ class AssistantResponses(Static):
                     markdown = markdown + data["choices"][0]["delta"]["content"]
                 if i % update_frequency == 0:
                     self._app.call_from_thread(new_response.update_response, markdown)
-                    self._app.call_from_thread(self.container.scroll_end)
+                    if not self._app.scrolled_during_response_stream:
+                        self._app.call_from_thread(self.container.scroll_end)
             except:
                 continue
 

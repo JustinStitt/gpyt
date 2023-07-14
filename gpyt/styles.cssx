@@ -16,9 +16,14 @@ UserInput {
   border-subtitle-color: $primary-background-lighten-1;
 }
 
+UserInput.hidden {
+  offset-y: 200%;
+}
+
 AssistantResponses {
   border: panel $primary-background-lighten-1;
   margin: 1;
+  min-height: 15;
   border-title-align: center;
   border-title-color: rgb(225,225,225);
   background: $surface-lighten-1;

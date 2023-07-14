@@ -5,6 +5,7 @@ from pathlib import Path
 from textual import work
 from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header, LoadingIndicator
+from textual.binding import Binding
 
 
 from gpyt.free_assistant import FreeAssistant
@@ -30,6 +31,7 @@ class AssistantApp(App):
         ("up", "scroll_convo_up", "Scroll Up Convo"),
         ("down", "scroll_convo_down", "Scroll Down Convo"),
         ("ctrl+o", "toggle_settings", "Settings"),
+        ("ctrl+x", "toggle_input", "Hide/Show Input"),
     ]
 
     CSS_PATH = "styles.cssx"
@@ -55,6 +57,8 @@ class AssistantApp(App):
         self.use_default_model = not (
             self.use_free_gpt or self.use_palm or self.use_gpt4
         )
+
+        self.scrolled_during_response_stream = False
 
     def _get_assistant(self) -> Assistant | FreeAssistant | PalmAssistant:
         if self.use_palm:
@@ -274,8 +278,12 @@ class AssistantApp(App):
     def action_handle_exit(self) -> None:
         exit()
 
+    def action_toggle_input(self) -> None:
+        self.user_input.toggle_class("hidden")
+
     def action_scroll_convo_up(self) -> None:
         self.assistant_responses.container.scroll_relative(y=-4)
+        self.scrolled_during_response_stream = True
 
     def action_scroll_convo_down(self) -> None:
         self.assistant_responses.container.scroll_relative(y=4)
