@@ -56,22 +56,21 @@ Or try this *optional* method for running **PaLM 2**, Google's premier LLM:
 5) `$ gpyt --palm`
      - Be sure to set an api key at `~/.env` with the field `PALM_API_KEY`
 
+Or try out GPT4 w/ gpyt!
+
+6) `$ gpyt --gpt4`
+
 ### Keybindings
 
 * `ctrl-b` -> Toggle Dark/Light Mode
 * `ctrl-n` -> Open Past Conversations Sidebar
 * `ctrl-c` -> Quit
 * `ctrl-o` -> Model Selection Menu
+* `ctrl-t` -> Open External Editor (for input)
+* `ctrl-x` -> hide input box (helpful for small screens)
 
 
 ### TODO
 
-- [ ] `copy` to copy GPT's response to clipboard
 - [ ] add gpt jailbreaks (DAN-esque)
 - [ ] add special flags like -t (terse) or -v (verbose) or -d (detailed) or -i
-- [ ] (informal) or -f (for file input) or --dan (for jailbreak)
-- [ ] model select CLI
-- [ ] add API_KEY from CLI
-- [ ] gpt4free integration (~~for 3.5~~ and 4)
-- [ ] refactor the f**k out of `app.py`
-- [ ] copy/pasting with mouse
