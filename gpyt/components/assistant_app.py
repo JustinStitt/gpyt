@@ -295,6 +295,4 @@ class AssistantApp(App):
         self.assistant_responses.container.scroll_relative(y=4)
 
     def action_open_external_editor(self) -> None:
-        func = self.user_input.open_external_editor
-        func()
-        # tsk = await asyncio.create_task(func())
+        self.user_input.open_external_editor()
