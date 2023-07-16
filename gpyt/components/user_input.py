@@ -56,7 +56,8 @@ class UserInput(Container):
             os.unlink(tf.name)
 
         driver.start_application_mode()  # https://github.com/Textualize/textual/pull/1150
-        self._app.fetch_assistant_response(user_input)
+        if len(user_input.strip()) > 1:
+            self._app.fetch_assistant_response(user_input)
 
     async def on_input_submitted(self, event: Input.Submitted) -> None:
         user_input = event.input.value
