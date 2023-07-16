@@ -4,13 +4,13 @@ from pathlib import Path
 
 from textual import work
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header, LoadingIndicator
 from textual.binding import Binding
-
+from textual.widgets import Footer, Header, LoadingIndicator
 
 from gpyt.free_assistant import FreeAssistant
 from gpyt.palm_assistant import PalmAssistant
-from ..args import USE_EXPERIMENTAL_FREE_MODEL, USE_PALM_MODEL, USE_GPT4
+
+from ..args import USE_EXPERIMENTAL_FREE_MODEL, USE_GPT4, USE_PALM_MODEL
 from ..assistant import Assistant
 from ..conversation import Conversation, Message
 from ..id import get_id
@@ -28,10 +28,17 @@ class AssistantApp(App):
         ("ctrl+b", "toggle_dark", "Toggle Dark Mode"),
         ("ctrl+n", "toggle_sidebar", "Past Conversations"),
         ("ctrl+c", "handle_exit", "Quit"),
-        ("up", "scroll_convo_up", "Scroll Up Convo"),
-        ("down", "scroll_convo_down", "Scroll Down Convo"),
+        Binding("up", "scroll_convo_up", "Scroll Up Convo", show=False),
+        Binding("down", "scroll_convo_down", "Scroll Down Convo", show=False),
         ("ctrl+o", "toggle_settings", "Settings"),
         ("ctrl+x", "toggle_input", "Hide/Show Input"),
+        Binding(
+            "ctrl+t",
+            "open_external_editor",
+            "Open External Editor",
+            show=True,
+            priority=True,
+        ),
     ]
 
     CSS_PATH = "styles.cssx"
@@ -57,7 +64,6 @@ class AssistantApp(App):
         self.use_default_model = not (
             self.use_free_gpt or self.use_palm or self.use_gpt4
         )
-
         self.scrolled_during_response_stream = False
 
     def _get_assistant(self) -> Assistant | FreeAssistant | PalmAssistant:
@@ -287,3 +293,8 @@ class AssistantApp(App):
 
     def action_scroll_convo_down(self) -> None:
         self.assistant_responses.container.scroll_relative(y=4)
+
+    def action_open_external_editor(self) -> None:
+        func = self.user_input.open_external_editor
+        func()
+        # tsk = await asyncio.create_task(func())
