@@ -185,6 +185,7 @@ class AssistantApp(App):
         current conversation history and resetting it.
         """
         self.assistant_responses.remove()
+        self.assistant.clear_history()
         self.assistant_responses = AssistantResponses(app=self)
         self.mount(self.assistant_responses)
         self.assistant_responses.border_title = "Conversation History"
