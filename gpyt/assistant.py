@@ -2,7 +2,15 @@ from typing import Generator
 
 import openai
 
-from .config import API_ERROR_FALLBACK, SUMMARY_PROMPT
+import tiktoken
+
+from .config import (
+    API_ERROR_FALLBACK,
+    SUMMARY_PROMPT,
+    APPROX_PROMPT_TOKEN_USAGE,
+    PRICING_LOOKUP,
+    MODEL_MAX_CONTEXT,
+)
 
 
 class Assistant:
@@ -32,6 +40,12 @@ class Assistant:
         ]
         self.error_fallback_message = API_ERROR_FALLBACK
         openai.api_key = self.api_key
+        self._encoding_engine = tiktoken.get_encoding(
+            "cl100k_base"
+        )  # gpt3.5/gpt4 encoding engine
+        self.input_tokens_this_convo = APPROX_PROMPT_TOKEN_USAGE
+        self.output_tokens_this_convo = 10
+        self.price_of_this_convo = self.get_default_price_of_prompt()
 
     def set_history(self, new_history: list):
         """Reassign all message history except for system message"""
@@ -39,12 +53,53 @@ class Assistant:
         self.messages = new_history[::]
         self.messages.insert(0, sys_prompt)
 
+    def get_tokens_used(self, message: str) -> int:
+        return len(self._encoding_engine.encode(message))
+
+    def get_default_price_of_prompt(self) -> float:
+        return self.get_approximate_price(
+            self.get_tokens_used(self.prompt), 0
+        ) + self.get_approximate_price(self.get_tokens_used(self.summary_prompt), 10)
+
+    def tokens_used_this_convo(self) -> int:
+        num = self.input_tokens_this_convo + self.output_tokens_this_convo
+        has_limit = MODEL_MAX_CONTEXT.get(self.model, None)
+        if not has_limit:
+            return 0
+
+        self.input_tokens_this_convo = min(self.input_tokens_this_convo, has_limit / 2)
+        self.output_tokens_this_convo = min(
+            self.output_tokens_this_convo, has_limit / 2
+        )
+        return min(has_limit, num)  # type: ignore
+
+    def update_token_usage_for_input(self, in_message: str, out_message: str) -> None:
+        in_tokens_used = self.get_tokens_used(in_message)
+        out_tokens_used = self.get_tokens_used(out_message)
+        self.input_tokens_this_convo += self.input_tokens_this_convo + in_tokens_used
+        self.output_tokens_this_convo += self.output_tokens_this_convo + out_tokens_used
+        self.price_of_this_convo += self.get_approximate_price(
+            self.input_tokens_this_convo, self.output_tokens_this_convo
+        )
+
+    def get_approximate_price(self, _in: int | float, _out: int | float) -> float:
+        known_pricing = PRICING_LOOKUP.get(self.model, None)
+        if not known_pricing:
+            return 0.0
+        in_price_ratio = PRICING_LOOKUP[self.model][0]
+        out_price_ratio = PRICING_LOOKUP[self.model][1]
+
+        return (_in / 1000) * in_price_ratio + (_out / 1000) * out_price_ratio
+
     def clear_history(self):
         """
         Wipe all message history during this conversation, except for the
         first system message
         """
         self.messages = [self.messages[0]]
+        self.input_tokens_this_convo = APPROX_PROMPT_TOKEN_USAGE
+        self.output_tokens_this_convo = 10
+        self.price_of_this_convo = self.get_default_price_of_prompt()
 
     def get_response_stream(self, user_input: str) -> Generator:
         """
@@ -62,6 +117,8 @@ class Assistant:
             messages=self.messages,
             stream=True,
         )
+
+        # print(response["usage"])
 
         return response  # type: ignore
 

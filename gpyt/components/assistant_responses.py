@@ -92,3 +92,14 @@ class AssistantResponses(Static):
         if loading_indicator:
             self._app.call_from_thread(loading_indicator.remove)
             print("deleting loading indicator")
+
+        # counting tokens
+        _assistant = self._app._get_assistant()
+        _assistant.update_token_usage_for_input(
+            in_message=message.content, out_message=markdown
+        )
+        token_usage = f" -- tokens: {_assistant.tokens_used_this_convo()} | ${_assistant.price_of_this_convo:.8f} | {_assistant.model}"
+        self._app._set_summary_title_id(
+            self._app.active_conversation.summary + token_usage,
+            self._app.active_conversation.id,
+        )

@@ -1,6 +1,7 @@
 from typing import Generator
 
 import google.generativeai as palm
+import tiktoken
 
 from .assistant import Assistant
 from .config import API_ERROR_FALLBACK, PROMPT
@@ -37,6 +38,9 @@ class PalmAssistant(Assistant):
             palm.configure(api_key=self.api_key)
         self.messages = []
         self.error_fallback_message = PalmAssistant.API_ERROR_MESSAGE
+        self._encoding_engine = tiktoken.get_encoding(
+            "cl100k_base"
+        )  # gpt3.5/gpt4 encoding engine
 
     def set_history(self, new_history: list[dict[str, str]]):
         self.clear_history()

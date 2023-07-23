@@ -1,6 +1,4 @@
-SUMMARY_PROMPT = """Summarize the following question in 6 words or less. be
-concise and fully grasp the main idea of the question. If what follows
-is not a question just summarize the idea of the statement itself\n"""
+SUMMARY_PROMPT = """Summarize the following question/statement in 5 words or less"""
 
 
 API_ERROR_MESSAGE = """
@@ -52,3 +50,9 @@ For example, if the user is asking about football use this format
 
 --end intermediate to complex topics instructions--
 """
+
+APPROX_PROMPT_TOKEN_USAGE = 160
+
+PRICING_LOOKUP = {"gpt-3.5-turbo": (0.0015, 0.002), "gpt-4": (0.03, 0.06)}
+
+MODEL_MAX_CONTEXT = {"gpt-3.5-turbo": 4096, "gpt-4": 8096}

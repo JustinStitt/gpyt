@@ -1,16 +1,19 @@
 from typing import Generator
 
 from gpt4free import you
-
-from .config import API_ERROR_FALLBACK
+import tiktoken
 
 from .assistant import Assistant
+from .config import API_ERROR_FALLBACK
 
 
 class FreeAssistant(Assistant):
     def __init__(self):
         self.error_fallback_message = API_ERROR_FALLBACK
         self.chat: list[dict[str, str]] = []
+        self._encoding_engine = tiktoken.get_encoding(
+            "cl100k_base"
+        )  # gpt3.5/gpt4 encoding engine
 
     def set_history(self, history: list[dict[str, str]]) -> None:
         self.clear_history()
