@@ -67,11 +67,7 @@ class Assistant:
         if not has_limit:
             return 0
 
-        self.input_tokens_this_convo = min(self.input_tokens_this_convo, has_limit / 2)
-        self.output_tokens_this_convo = min(
-            self.output_tokens_this_convo, has_limit / 2
-        )
-        return min(has_limit, num)  # type: ignore
+        return num
 
     def update_token_usage_for_input(self, in_message: str, out_message: str) -> None:
         in_tokens_used = self.get_tokens_used(in_message)
@@ -88,6 +84,13 @@ class Assistant:
             return 0.0
         in_price_ratio = PRICING_LOOKUP[self.model][0]
         out_price_ratio = PRICING_LOOKUP[self.model][1]
+
+        limit = MODEL_MAX_CONTEXT.get(self.model, None)
+        if not limit:
+            return 0
+
+        _in = min(_in, limit / 2)
+        _out = min(_out, limit / 2)
 
         return (_in / 1000) * in_price_ratio + (_out / 1000) * out_price_ratio
 

@@ -4,7 +4,10 @@ from gpt4free import you
 import tiktoken
 
 from .assistant import Assistant
-from .config import API_ERROR_FALLBACK
+from .config import (
+    API_ERROR_FALLBACK,
+    APPROX_PROMPT_TOKEN_USAGE,
+)
 
 
 class FreeAssistant(Assistant):
@@ -14,6 +17,12 @@ class FreeAssistant(Assistant):
         self._encoding_engine = tiktoken.get_encoding(
             "cl100k_base"
         )  # gpt3.5/gpt4 encoding engine
+        self.input_tokens_this_convo = APPROX_PROMPT_TOKEN_USAGE
+        self.output_tokens_this_convo = 10
+        self.prompt = ""
+        self.summary_prompt = ""
+        self.model = ""
+        self.price_of_this_convo = self.get_default_price_of_prompt()
 
     def set_history(self, history: list[dict[str, str]]) -> None:
         self.clear_history()
