@@ -13,12 +13,16 @@ from .config import MODEL, PROMPT
 # check for environment variable first
 API_KEY = os.getenv("OPENAI_API_KEY")
 PALM_API_KEY = os.getenv("PALM_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 DOTENV_PATH = os.path.expanduser("~/.env")
 
 if API_KEY is None or (isinstance(API_KEY, str) and not len(API_KEY)):
     result = dotenv_values(DOTENV_PATH)
     API_KEY = result.get("OPENAI_API_KEY", None)
     PALM_API_KEY = result.get("PALM_API_KEY", None)
+    ANTHROPIC_API_KEY = result.get("ANTHROPIC_API_KEY", None)
+    COHERE_API_KEY = result.get("COHERE_API_KEY", None)
 
 
 assert (
