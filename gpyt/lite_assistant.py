@@ -1,21 +1,18 @@
 from typing import Generator
-import litellm 
-from litellm import completion
-import google.generativeai as palm
-import tiktoken
-import os
-from .assistant import Assistant
-from .config import API_ERROR_FALLBACK, PROMPT
+
 import dotenv
+from litellm import completion
+import tiktoken
+
+from .assistant import Assistant
+from .config import API_ERROR_FALLBACK
+from .config import API_ERROR_FALLBACK, APPROX_PROMPT_TOKEN_USAGE
+
 dotenv.load_dotenv()
-from .config import (
-    API_ERROR_FALLBACK,
-    APPROX_PROMPT_TOKEN_USAGE,
-)
 
 
 class LiteAssistant(Assistant):
-    API_ERROR_MESSAGE = """There was an ERROR with the model API\n## Diagnostics\n* Make sure you have a PALM_API_KEY set at `~/.env`\n* Make sure you aren't being rate-limited."""
+    API_ERROR_MESSAGE = """There was an ERROR with the model API\n## Diagnostics\n* Make sure you have an API_KEY set at `~/.env`\n* Make sure you aren't being rate-limited."""
 
     def __init__(self, api_key: str, model: str, memory: bool = True):
         self.error_fallback_message = API_ERROR_FALLBACK
@@ -29,9 +26,7 @@ class LiteAssistant(Assistant):
         self.output_tokens_this_convo = 10
         self.prompt, self.summary_prompt = ("", "")
 
-        self._encoding_engine = tiktoken.get_encoding(
-            "cl100k_base"
-        )  
+        self._encoding_engine = tiktoken.get_encoding("cl100k_base")
         self.price_of_this_convo = self.get_default_price_of_prompt()
 
     def set_history(self, new_history: list[dict[str, str]]):
@@ -61,7 +56,6 @@ class LiteAssistant(Assistant):
             model=self.model,
             messages=self.messages,
             stream=True,
-            api_key=self.api_key # optional param, litellm will read it from the os.getenv by default
         )
 
         return response  # type: ignore
@@ -75,8 +69,9 @@ class LiteAssistant(Assistant):
             summary = self.get_response(initial_message)
         except:
             return Assistant.kDEFAULT_SUMMARY_FALLTHROUGH
-        
+
         return summary
+
 
 if __name__ == "__main__":
     ...

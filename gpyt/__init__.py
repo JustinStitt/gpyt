@@ -4,6 +4,7 @@ from dotenv import dotenv_values
 
 from gpyt.free_assistant import FreeAssistant
 from gpyt.palm_assistant import PalmAssistant
+from gpyt.lite_assistant import LiteAssistant
 
 from .app import gpyt
 from .args import USE_EXPERIMENTAL_FREE_MODEL
@@ -56,4 +57,5 @@ gpt = Assistant(api_key=API_KEY or "", model=MODEL, prompt=PROMPT)
 gpt4 = Assistant(api_key=API_KEY or "", model="gpt-4", prompt=PROMPT)
 free_gpt = FreeAssistant()
 palm = PalmAssistant(api_key=PALM_API_KEY)
-app = gpyt(assistant=gpt, free_assistant=free_gpt, palm=palm, gpt4=gpt4)
+litellm = LiteAssistant(api_key='', model=MODEL)
+app = gpyt(assistant=gpt, free_assistant=free_gpt, palm=palm, gpt4=gpt4, lite_assistant = litellm)

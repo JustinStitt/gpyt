@@ -8,9 +8,16 @@ from textual.binding import Binding
 from textual.widgets import Footer, Header, LoadingIndicator
 
 from gpyt.free_assistant import FreeAssistant
+from gpyt.lite_assistant import LiteAssistant
 from gpyt.palm_assistant import PalmAssistant
 
-from ..args import USE_EXPERIMENTAL_FREE_MODEL, USE_GPT4, USE_PALM_MODEL
+from ..args import (
+    USE_EXPERIMENTAL_FREE_MODEL,
+    USE_GPT4,
+    USE_PALM_MODEL,
+    USE_LITELLM,
+    LITELLM_MODEL,
+)
 from ..assistant import Assistant
 from ..conversation import Conversation, Message
 from ..id import get_id
@@ -49,30 +56,38 @@ class AssistantApp(App):
         free_assistant: FreeAssistant,
         palm: PalmAssistant,
         gpt4: Assistant,
+        lite_assistant: LiteAssistant,
     ):
         super().__init__()
         self.assistant = assistant
         self._free_assistant = free_assistant
         self._palm = palm
         self._gpt4 = gpt4
+        self._lite_assistant = lite_assistant
         self.conversations: list[Conversation] = []
         self.active_conversation: Conversation | None = None
         self._convo_ids_added: set[str] = set()
         self.use_free_gpt = USE_EXPERIMENTAL_FREE_MODEL
         self.use_palm = USE_PALM_MODEL
         self.use_gpt4 = USE_GPT4
+        self.use_litellm = USE_LITELLM
         self.use_default_model = not (
-            self.use_free_gpt or self.use_palm or self.use_gpt4
+            self.use_free_gpt or self.use_palm or self.use_gpt4 or self.use_litellm
         )
         self.scrolled_during_response_stream = False
 
-    def _get_assistant(self) -> Assistant | FreeAssistant | PalmAssistant:
+    def _get_assistant(
+        self,
+    ) -> Assistant | FreeAssistant | PalmAssistant | LiteAssistant:
         if self.use_palm:
             return self._palm
         if self.use_free_gpt:
             return self._free_assistant
         if self.use_gpt4:
             return self._gpt4
+        if self.use_litellm:
+            self._lite_assistant.model = LITELLM_MODEL
+            return self._lite_assistant
 
         return self.assistant
 
@@ -85,6 +100,8 @@ class AssistantApp(App):
             model = "PaLM 2 🌴"
         elif self.use_gpt4:
             model = "GPT 4"
+        elif self.use_litellm:
+            model = f"LITELLM w/ {LITELLM_MODEL}"
 
         self.user_input.border_title = f"Model: {model}"
 
