@@ -109,10 +109,8 @@ Options.hidden {
   offset-x: -100%;
 }
 
-OptionCheckbox {
-  height: 1;
-}
-
-OptionCheckbox:focus-within {
-  background: $secondary-background-lighten-2;
+RadioButton {
+  padding: 0;
+  height: 3;
+  margin: 0;
 }
